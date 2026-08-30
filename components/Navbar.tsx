@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Truck, BarChart3, LayoutDashboard, LogOut, ShieldCheck, UserCheck, Clock } from 'lucide-react';
+import { Truck, BarChart3, LayoutDashboard, LogOut, ShieldCheck, UserCheck, Clock, Calendar } from 'lucide-react';
 import { UserProfile, CompanySettings } from '@/lib/types';
 
 interface NavbarProps {
@@ -15,10 +15,15 @@ export default function Navbar({ user, company }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [time, setTime] = useState<string>('');
+  const [dateStr, setDateStr] = useState<string>('');
 
   useEffect(() => {
-    const updateTime = () => {
+    const updateDateTime = () => {
       const now = new Date();
+      const yyyy = now.getFullYear();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      setDateStr(`${yyyy}${mm}${dd}`);
       setTime(
         now.toLocaleTimeString('en-US', {
           hour: '2-digit',
@@ -28,8 +33,8 @@ export default function Navbar({ user, company }: NavbarProps) {
         })
       );
     };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+    updateDateTime();
+    const interval = setInterval(updateDateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -100,12 +105,18 @@ export default function Navbar({ user, company }: NavbarProps) {
             </Link>
           </nav>
 
-          {/* User Profile & Live Clock & Logout */}
+          {/* User Profile & Live Date/Clock & Logout */}
           <div className="flex items-center gap-4">
-            {/* Live Clock */}
-            <div className="hidden lg:flex items-center gap-1.5 text-xs font-mono text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-              <Clock className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-              <span>{time || 'Loading...'}</span>
+            {/* Live Date (Upper) & Time (Lower) Header Box */}
+            <div className="hidden lg:flex flex-col justify-center text-xs font-mono text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 shadow-inner">
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 font-bold">
+                <Calendar className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Date: {dateStr || '...'}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-slate-300 font-bold mt-0.5">
+                <Clock className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <span>{time || 'Loading...'}</span>
+              </div>
             </div>
 
             {user ? (

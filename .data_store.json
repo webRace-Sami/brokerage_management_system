@@ -346,7 +346,7 @@
       "quantityUnit": "Bags",
       "weightKg": 9000,
       "weightMaunds": 225,
-      "weightSlipNo": "KND-9012 / 112234",
+      "weightSlipNo": "KND-9012",
       "truckNo": "FD-9923",
       "driverName": "Muhammad Arshad",
       "driverCnic": "33202-7654321-5",
@@ -422,14 +422,14 @@
       "quantityUnit": "Drums",
       "weightKg": 1280,
       "weightMaunds": 32,
-      "weightSlipNo": "xdk-2983 / 232444",
+      "weightSlipNo": "232444",
       "truckNo": "LHR-5566",
       "driverName": "Rashid Mehmood",
       "driverCnic": "33202-6677889-1",
-      "driverPhone": null,
+      "driverPhone": "",
       "shopName": "Al-Madina Oil Traders",
       "shopkeeperName": "Haji Shakeel",
-      "shopkeeperPhone": null,
+      "shopkeeperPhone": "",
       "destinationAddress": "Main City Bazaar",
       "destinationCity": "Lahore",
       "rentAmountPkr": 26000,
@@ -441,7 +441,7 @@
       "paymentDate": "2026-08-30",
       "dispatchedBy": "Admin Haji Abdul Rehman",
       "dispatchDate": "2026-08-30",
-      "remarks": null,
+      "remarks": "",
       "createdAt": "2026-08-30T10:47:33.940Z"
     },
     {
@@ -449,7 +449,7 @@
       "irn": "2026083007",
       "srNo": 7,
       "biltyNo": "MGT-9944",
-      "weightSlipNo": "xdk-4411 / 771234",
+      "weightSlipNo": "771234",
       "quantityUnit": "Bags",
       "rentAmountPkr": 24000,
       "advancePaidPkr": 24000,
@@ -472,15 +472,15 @@
       "truckNo": "FD-1122",
       "driverName": "Tariq Mehmood",
       "driverCnic": "33202-9988776-5",
-      "driverPhone": null,
+      "driverPhone": "",
       "shopName": "Al-Barkat Floor Depo",
       "shopkeeperName": "Haji Asif",
-      "shopkeeperPhone": null,
+      "shopkeeperPhone": "",
       "destinationAddress": "Main City Bazaar",
       "destinationCity": "Chiniot",
       "paymentMethod": "Cash Cleared",
       "dispatchedBy": "Munshi Muhammad Aslam",
-      "remarks": null
+      "remarks": ""
     }
   ]
 }

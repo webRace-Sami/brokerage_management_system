@@ -287,7 +287,7 @@ export default function DashboardPage() {
     );
   }
 
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">

@@ -61,7 +61,7 @@ export default function DispatchTable({
   onExportExcel,
   onRefresh,
 }: DispatchTableProps) {
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">

@@ -42,7 +42,7 @@ export default function BrokerManagementModal({
 
   if (!isOpen) return null;
 
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
   const mainBrokers = brokers.filter((b) => b.type === 'MAIN_BROKER');
 
   const resetForm = () => {

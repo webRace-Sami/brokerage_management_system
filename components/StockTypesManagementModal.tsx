@@ -36,7 +36,7 @@ export default function StockTypesManagementModal({
 
   if (!isOpen) return null;
 
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
 
   const resetForm = () => {
     setName('');

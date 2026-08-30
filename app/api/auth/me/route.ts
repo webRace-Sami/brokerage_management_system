@@ -10,20 +10,29 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await db.findUser({ id: payload.userId });
+    const user = (await db.findUser({ id: payload.userId })) || (await db.findUser({ usernameOrEmail: payload.username }));
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (user) {
+      return NextResponse.json({
+        user: {
+          id: user.id,
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          role: user.username === 'admin' ? 'ADMIN' : user.role,
+          phone: user.phone || '',
+        },
+      });
     }
 
     return NextResponse.json({
       user: {
-        id: user.id,
-        name: user.name,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        phone: user.phone,
+        id: payload.userId,
+        name: payload.name,
+        username: payload.username,
+        email: payload.email,
+        role: payload.username === 'admin' ? 'ADMIN' : payload.role,
+        phone: '',
       },
     });
   } catch (error: any) {

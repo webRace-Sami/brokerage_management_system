@@ -45,7 +45,7 @@ export default function CompanySettingsModal({
 
   if (!isOpen) return null;
 
-  const isAdmin = currentUser?.role === 'ADMIN';
+  const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

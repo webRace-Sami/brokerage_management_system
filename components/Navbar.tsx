@@ -23,7 +23,7 @@ export default function Navbar({ user, company }: NavbarProps) {
       const yyyy = now.getFullYear();
       const mm = String(now.getMonth() + 1).padStart(2, '0');
       const dd = String(now.getDate()).padStart(2, '0');
-      setDateStr(`${yyyy}${mm}${dd}`);
+      setDateStr(`${yyyy}-${mm}-${dd}`);
       setTime(
         now.toLocaleTimeString('en-US', {
           hour: '2-digit',
@@ -111,7 +111,7 @@ export default function Navbar({ user, company }: NavbarProps) {
             <div className="hidden lg:flex flex-col justify-center text-xs font-mono text-slate-300 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700 shadow-inner">
               <div className="flex items-center gap-1.5 text-xs text-slate-300 font-bold">
                 <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Date: {dateStr || '...'}</span>
+                <span>{dateStr || '...'}</span>
               </div>
               <div className="flex items-center gap-1.5 text-xs text-slate-300 font-bold mt-0.5">
                 <Clock className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />

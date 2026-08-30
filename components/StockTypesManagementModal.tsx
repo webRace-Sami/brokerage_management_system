@@ -81,48 +81,46 @@ export default function StockTypesManagementModal({
     setLoading(true);
 
     try {
+      let res: Response;
+      const payload = {
+        name,
+        nameUrdu: nameUrdu || name,
+        code: code || `ST-${name.slice(0, 3).toUpperCase()}`,
+        category,
+        defaultUnit,
+        standardWeightKg: Number(standardWeightKg) || 50,
+        defaultUnitPricePkr: Number(defaultUnitPricePkr) || 5000,
+        description,
+      };
+
       if (editingId) {
-        const res = await fetch(`/api/stock-types/${editingId}`, {
+        res = await fetch(`/api/stock-types/${editingId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            nameUrdu: nameUrdu || name,
-            code: code || `ST-${name.slice(0, 3).toUpperCase()}`,
-            category,
-            defaultUnit,
-            standardWeightKg: Number(standardWeightKg) || 50,
-            defaultUnitPricePkr: Number(defaultUnitPricePkr) || 5000,
-            description,
-          }),
+          body: JSON.stringify(payload),
         });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to update stock type.');
       } else {
-        const res = await fetch('/api/stock-types', {
+        res = await fetch('/api/stock-types', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            nameUrdu: nameUrdu || name,
-            code: code || `ST-${name.slice(0, 3).toUpperCase()}`,
-            category,
-            defaultUnit,
-            standardWeightKg: Number(standardWeightKg) || 50,
-            defaultUnitPricePkr: Number(defaultUnitPricePkr) || 5000,
-            description,
-          }),
+          body: JSON.stringify(payload),
         });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to create stock type.');
       }
+
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
+
+      if (!res.ok) throw new Error(data.error || `Failed to save stock type (Status ${res.status}).`);
 
       resetForm();
       onSuccess();
     } catch (err: any) {
-      setError(err.message || 'Error occurred.');
+      setError(err.message || 'Error occurred while saving.');
     } finally {
       setLoading(false);
     }
@@ -133,11 +131,16 @@ export default function StockTypesManagementModal({
 
     try {
       const res = await fetch(`/api/stock-types/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        onSuccess();
-      }
-    } catch (e) {
-      console.error(e);
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {}
+
+      if (!res.ok) throw new Error(data.error || 'Failed to delete stock type.');
+      onSuccess();
+    } catch (e: any) {
+      alert(e.message || 'Error deleting stock type.');
     }
   };
 

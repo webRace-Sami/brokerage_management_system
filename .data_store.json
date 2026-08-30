@@ -4,21 +4,21 @@
     "phone": "0300-6501234",
     "uan": "047-6331234",
     "location": "Sargodha Road Bypass, Chiniot, Punjab, Pakistan",
-    "description": "Premier Goods Transport, Logistics & Brokerage Management Portal serving nationwide freight routes from Chiniot.",
+    "description": "Leading goods brokerage, road transport, commodity freight, and warehousing management enterprise.",
     "establishedYear": "1998",
-    "terms": "مال کی لوڈنگ و انلوڈنگ کے دوران مکمل احتیاط کی جاتی ہے۔ کسی بھی حادثہ کی صورت میں بلٹی شرائط لاگو ہوں گی۔"
+    "terms": "Goods transported at owner risk. Freight payment strictly due upon delivery. Bilty receipt required for unloading."
   },
   "stockTypes": [
     {
       "id": "st_sugar",
       "name": "Sugar (چینی)",
-      "nameUrdu": "چینی ریفائنڈ",
+      "nameUrdu": "چینی ریفائنڈ گریڈ اے",
       "code": "ST-SUG",
       "category": "Food & Sweeteners",
       "defaultUnit": "Bags",
       "standardWeightKg": 50,
-      "defaultUnitPricePkr": 7200,
-      "description": "Grade-1 White Refined Sugar in 50kg Bags from Punjab Mills."
+      "defaultUnitPricePkr": 7400,
+      "description": "Grade-1 White Refined Sugar in 50kg Bags."
     },
     {
       "id": "st_oil",

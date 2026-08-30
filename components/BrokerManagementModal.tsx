@@ -116,25 +116,30 @@ export default function BrokerManagementModal({
         commissionRate: type === 'MAIN_BROKER' ? 0 : (Number(commissionRate) || 0),
       };
 
+      let res: Response;
       if (editingBrokerId) {
-        const res = await fetch(`/api/brokers/${editingBrokerId}`, {
+        res = await fetch(`/api/brokers/${editingBrokerId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to update broker.');
       } else {
-        const res = await fetch('/api/brokers', {
+        res = await fetch('/api/brokers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
         });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to create broker.');
       }
+
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
+
+      if (!res.ok) throw new Error(data.error || `Failed to save broker (Status ${res.status}).`);
 
       resetForm();
       onSuccess();
@@ -150,11 +155,16 @@ export default function BrokerManagementModal({
 
     try {
       const res = await fetch(`/api/brokers/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        onSuccess();
-      }
-    } catch (e) {
-      console.error(e);
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {}
+
+      if (!res.ok) throw new Error(data.error || 'Failed to delete broker.');
+      onSuccess();
+    } catch (e: any) {
+      alert(e.message || 'Error removing broker.');
     }
   };
 

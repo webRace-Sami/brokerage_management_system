@@ -73,14 +73,21 @@ export default function CompanySettingsModal({
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to update company settings.');
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
+
+      if (!res.ok) throw new Error(data.error || `Failed to update company settings (Status ${res.status}).`);
 
       setSuccessMsg('Company business settings updated successfully!');
       setTimeout(() => {
         onSuccess();
         onClose();
-      }, 1000);
+      }, 800);
     } catch (err: any) {
       setError(err.message || 'Error occurred while saving settings.');
     } finally {

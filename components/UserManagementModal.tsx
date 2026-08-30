@@ -102,39 +102,39 @@ export default function UserManagementModal({
     setFormSubmitting(true);
 
     try {
+      let res: Response;
+      const payload = {
+        name,
+        username,
+        email,
+        plainPassword: password,
+        role,
+        phone,
+      };
+
       if (isEditing && selectedUserId) {
-        // PUT update
-        const res = await fetch(`/api/users/${selectedUserId}`, {
+        res = await fetch(`/api/users/${selectedUserId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            username,
-            email,
-            plainPassword: password,
-            role,
-            phone,
-          }),
+          body: JSON.stringify(payload),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to update user account.');
       } else {
-        // POST create
-        const res = await fetch('/api/users', {
+        res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            username,
-            email,
-            plainPassword: password,
-            role,
-            phone,
-          }),
+          body: JSON.stringify(payload),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to create user account.');
       }
+
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
+
+      if (!res.ok) throw new Error(data.error || `Failed to save user account (Status ${res.status}).`);
 
       await fetchUsers();
       resetForm();
@@ -157,7 +157,12 @@ export default function UserManagementModal({
 
     try {
       const res = await fetch(`/api/users/${user.id}`, { method: 'DELETE' });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {}
+
       if (!res.ok) throw new Error(data.error || 'Failed to delete user.');
       await fetchUsers();
       if (onSuccess) onSuccess();

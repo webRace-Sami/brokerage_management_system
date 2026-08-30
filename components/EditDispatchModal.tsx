@@ -100,15 +100,22 @@ export default function EditDispatchModal({
         }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
+
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to update dispatch record.');
+        throw new Error(data.error || `Failed to update dispatch record (Status ${res.status}).`);
       }
 
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Error occurred.');
+      setError(err.message || 'Error updating dispatch.');
     } finally {
       setLoading(false);
     }

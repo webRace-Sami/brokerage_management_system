@@ -58,13 +58,20 @@ export default function UpdatePaymentModal({
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to update payment.');
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
+
+      if (!res.ok) throw new Error(data.error || `Failed to update payment (Status ${res.status}).`);
 
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Error occurred.');
+      setError(err.message || 'Error recording payment.');
     } finally {
       setLoading(false);
     }

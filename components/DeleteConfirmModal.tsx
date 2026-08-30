@@ -31,9 +31,16 @@ export default function DeleteConfirmModal({
         method: 'DELETE',
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
+
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to delete dispatch record.');
+        throw new Error(data.error || `Failed to delete dispatch record (Status ${res.status}).`);
       }
 
       onSuccess();

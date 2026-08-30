@@ -149,16 +149,22 @@ export default function NewDispatchModal({
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch (e) {
+        data = { error: text || 'Server response error' };
+      }
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit dispatch entry.');
+        throw new Error(data.error || `Failed to submit dispatch entry (Status ${res.status}).`);
       }
 
       onSuccess();
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Error occurred while saving.');
+      setError(err.message || 'Error recording dispatch.');
     } finally {
       setLoading(false);
     }

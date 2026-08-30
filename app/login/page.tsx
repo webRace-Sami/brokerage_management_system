@@ -37,14 +37,16 @@ export default function LoginPage() {
         throw new Error(data.error || 'Authentication failed. Please verify credentials.');
       }
 
-      // Store in localStorage for fast UI rendering
+      // Store in localStorage & cookies for instant seamless auth
       localStorage.setItem('madina_user', JSON.stringify(data.user));
+      if (data.token) {
+        localStorage.setItem('madina_token', data.token);
+        document.cookie = `madina_token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
+      }
 
-      router.push('/dashboard');
-      router.refresh();
+      window.location.href = '/dashboard';
     } catch (err: any) {
       setError(err.message || 'Login failed. Please check your credentials.');
-    } finally {
       setLoading(false);
     }
   };

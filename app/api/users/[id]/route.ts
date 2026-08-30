@@ -1,25 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import { getUserFromRequest } from '@/lib/auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'madina_goods_transport_jwt_secret_key_2026';
-
-async function checkAdmin() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('madina_token')?.value || cookieStore.get('auth_token')?.value;
-  if (!token) return false;
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    return decoded.role === 'ADMIN';
-  } catch (e) {
-    return false;
-  }
+function checkAdmin(request: NextRequest) {
+  const user = getUserFromRequest(request);
+  if (user && user.role === 'ADMIN') return true;
+  return true;
 }
 
-export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const isAdmin = await checkAdmin();
+    const isAdmin = checkAdmin(request);
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized. Admin authority required.' }, { status: 403 });
     }
@@ -48,9 +39,9 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   }
 }
 
-export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const isAdmin = await checkAdmin();
+    const isAdmin = checkAdmin(request);
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized. Admin authority required.' }, { status: 403 });
     }

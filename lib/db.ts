@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { getMongoDb } from './mongodb';
+import { hashPassword } from './auth';
 
 // Initial Company & Business Profile
 const initialCompanySettings = {
@@ -596,7 +597,7 @@ export const db = {
       name: userData.name.trim(),
       username: cleanUsername,
       email: userData.email?.trim() || `${cleanUsername}@madinagoods.com`,
-      password: userData.password || '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v',
+      password: userData.plainPassword ? hashPassword(userData.plainPassword) : (userData.password || hashPassword('MunshiPass@2026')),
       plainPassword: userData.plainPassword || 'MunshiPass@2026',
       role: userData.role || 'EMPLOYEE',
       phone: userData.phone?.trim() || '',
@@ -620,6 +621,10 @@ export const db = {
         if (store.users.some((u: any) => u.id !== id && u.username?.toLowerCase() === check)) {
           throw new Error(`Username "${check}" is already taken.`);
         }
+      }
+
+      if (updates.plainPassword) {
+        updates.password = hashPassword(updates.plainPassword);
       }
 
       store.users[index] = {

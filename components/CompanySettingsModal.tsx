@@ -133,10 +133,12 @@ export default function CompanySettingsModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Company Name */}
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="company_name" className="block text-xs font-bold text-slate-700 mb-1">
                 Company Name (کمپنی کا نام) <span className="text-red-500">*</span>
               </label>
               <input
+                id="company_name"
+                name="companyName"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -149,10 +151,12 @@ export default function CompanySettingsModal({
 
             {/* Phone */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="company_phone" className="block text-xs font-bold text-slate-700 mb-1">
                 Mobile / Booking Phone <span className="text-red-500">*</span>
               </label>
               <input
+                id="company_phone"
+                name="companyPhone"
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -165,10 +169,12 @@ export default function CompanySettingsModal({
 
             {/* UAN / Landline */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="company_uan" className="block text-xs font-bold text-slate-700 mb-1">
                 UAN / Landline
               </label>
               <input
+                id="company_uan"
+                name="companyUan"
                 type="text"
                 value={uan}
                 onChange={(e) => setUan(e.target.value)}
@@ -180,10 +186,12 @@ export default function CompanySettingsModal({
 
             {/* Established Year */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="company_est_year" className="block text-xs font-bold text-slate-700 mb-1">
                 Established Year
               </label>
               <input
+                id="company_est_year"
+                name="establishedYear"
                 type="text"
                 value={establishedYear}
                 onChange={(e) => setEstablishedYear(e.target.value)}
@@ -195,10 +203,12 @@ export default function CompanySettingsModal({
 
             {/* Location */}
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="company_location" className="block text-xs font-bold text-slate-700 mb-1">
                 Head Office & Godown Location (پتہ / اڈہ) <span className="text-red-500">*</span>
               </label>
               <input
+                id="company_location"
+                name="companyLocation"
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
@@ -211,10 +221,12 @@ export default function CompanySettingsModal({
 
             {/* Business Description */}
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="company_description" className="block text-xs font-bold text-slate-700 mb-1">
                 Business Description & Tagline
               </label>
               <textarea
+                id="company_description"
+                name="companyDescription"
                 rows={2}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -226,10 +238,12 @@ export default function CompanySettingsModal({
 
             {/* Terms & Conditions */}
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label htmlFor="company_terms" className="block text-xs font-bold text-slate-700 mb-1">
                 Bilty Terms & Conditions (بلٹی شرائط)
               </label>
               <textarea
+                id="company_terms"
+                name="companyTerms"
                 rows={2}
                 value={terms}
                 onChange={(e) => setTerms(e.target.value)}

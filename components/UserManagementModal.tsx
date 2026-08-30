@@ -237,10 +237,12 @@ export default function UserManagementModal({
 
             <form onSubmit={handleSubmit} className="space-y-3.5 flex-1">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="user_full_name" className="block text-xs font-bold text-slate-700 mb-1">
                   Full Name (پورا نام) *
                 </label>
                 <input
+                  id="user_full_name"
+                  name="fullName"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -252,10 +254,12 @@ export default function UserManagementModal({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="user_username" className="block text-xs font-bold text-slate-700 mb-1">
                     Username / Login ID *
                   </label>
                   <input
+                    id="user_username"
+                    name="username"
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -266,10 +270,12 @@ export default function UserManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="user_role" className="block text-xs font-bold text-slate-700 mb-1">
                     User Role (عہدہ) *
                   </label>
                   <select
+                    id="user_role"
+                    name="role"
                     value={role}
                     onChange={(e) => setRole(e.target.value as 'ADMIN' | 'EMPLOYEE')}
                     className="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-xl bg-white font-bold"
@@ -281,7 +287,7 @@ export default function UserManagementModal({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                <label htmlFor="user_password" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                   <span>Password (پاس ورڈ) *</span>
                   <span className="text-[10px] text-emerald-600 font-mono font-normal">
                     Plaintext saved for Munshi reference
@@ -290,6 +296,8 @@ export default function UserManagementModal({
                 <div className="relative">
                   <Key className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
+                    id="user_password"
+                    name="password"
                     type="text"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -302,12 +310,14 @@ export default function UserManagementModal({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="user_phone" className="block text-xs font-bold text-slate-700 mb-1">
                     Phone / Mobile (فون نمبر)
                   </label>
                   <div className="relative">
                     <Phone className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
+                      id="user_phone"
+                      name="phone"
                       type="text"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
@@ -318,12 +328,14 @@ export default function UserManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="user_email" className="block text-xs font-bold text-slate-700 mb-1">
                     Email Address
                   </label>
                   <div className="relative">
                     <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
+                      id="user_email"
+                      name="email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}

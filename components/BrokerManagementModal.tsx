@@ -228,10 +228,12 @@ export default function BrokerManagementModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Broker Type Selector */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="broker_type" className="block text-xs font-bold text-slate-700 mb-1">
                     Broker Classification <span className="text-red-500">*</span>
                   </label>
                   <select
+                    id="broker_type"
+                    name="brokerType"
                     value={type}
                     onChange={(e: any) => setType(e.target.value)}
                     className="w-full px-3 py-2 text-xs font-bold border border-indigo-200 rounded-xl bg-white"
@@ -242,10 +244,12 @@ export default function BrokerManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="broker_name" className="block text-xs font-bold text-slate-700 mb-1">
                     Broker Business Name <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="broker_name"
+                    name="brokerName"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -256,10 +260,12 @@ export default function BrokerManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="broker_phone" className="block text-xs font-bold text-slate-700 mb-1">
                     Phone / Mobile <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="broker_phone"
+                    name="brokerPhone"
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -270,10 +276,12 @@ export default function BrokerManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="broker_city" className="block text-xs font-bold text-slate-700 mb-1">
                     Base City / Market
                   </label>
                   <input
+                    id="broker_city"
+                    name="brokerCity"
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
@@ -284,10 +292,12 @@ export default function BrokerManagementModal({
 
                 {/* Own Stock Quantity */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="broker_own_bags" className="block text-xs font-bold text-slate-700 mb-1">
                     Registered Stock Quantity (Bags / Nugs)
                   </label>
                   <input
+                    id="broker_own_bags"
+                    name="ownAvailableBags"
                     type="number"
                     value={ownAvailableBags}
                     onChange={(e) => setOwnAvailableBags(e.target.value ? Number(e.target.value) : '')}
@@ -298,11 +308,13 @@ export default function BrokerManagementModal({
 
                 {/* Manual Stock Valuation in PKR */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                  <label htmlFor="broker_manual_valuation" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                     <span>Manual Stock Valuation (PKR)</span>
                     <Coins className="w-3 h-3 text-amber-500" />
                   </label>
                   <input
+                    id="broker_manual_valuation"
+                    name="manualStockValuationPkr"
                     type="number"
                     value={manualStockValuationPkr}
                     onChange={(e) => setManualStockValuationPkr(e.target.value ? Number(e.target.value) : '')}
@@ -318,10 +330,12 @@ export default function BrokerManagementModal({
                 {type === 'CO_BROKER' && (
                   <>
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label htmlFor="broker_quota_bags" className="block text-xs font-bold text-slate-700 mb-1">
                         Main-Broker Quota (Bags)
                       </label>
                       <input
+                        id="broker_quota_bags"
+                        name="allocatedQuotaBags"
                         type="number"
                         value={allocatedQuotaBags}
                         onChange={(e) => setAllocatedQuotaBags(e.target.value ? Number(e.target.value) : '')}
@@ -331,10 +345,12 @@ export default function BrokerManagementModal({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label htmlFor="broker_attached_main" className="block text-xs font-bold text-slate-700 mb-1">
                         Attach to which Main-Broker?
                       </label>
                       <select
+                        id="broker_attached_main"
+                        name="attachedToMainBrokerId"
                         value={attachedToMainBrokerId}
                         onChange={(e) => setAttachedToMainBrokerId(e.target.value)}
                         className="w-full px-3 py-2 text-xs border border-indigo-200 rounded-xl bg-white"
@@ -349,10 +365,12 @@ export default function BrokerManagementModal({
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label htmlFor="broker_commission_rate" className="block text-xs font-bold text-slate-700 mb-1">
                         Commission Rate (%)
                       </label>
                       <input
+                        id="broker_commission_rate"
+                        name="commissionRate"
                         type="number"
                         step="0.1"
                         value={commissionRate}

@@ -207,10 +207,12 @@ export default function NewDispatchModal({
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_broker_id" className="block text-xs font-bold text-slate-700 mb-1">
                   Select Selling Broker <span className="text-red-500">*</span>
                 </label>
                 <select
+                  id="dispatch_broker_id"
+                  name="brokerId"
                   value={brokerId}
                   onChange={(e) => {
                     setBrokerId(e.target.value);
@@ -270,10 +272,12 @@ export default function NewDispatchModal({
 
               {/* Commodity Stock Type */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_stock_type" className="block text-xs font-bold text-slate-700 mb-1">
                   Commodity Stock Type (جنس کی قسم)
                 </label>
                 <select
+                  id="dispatch_stock_type"
+                  name="stockType"
                   value={stockType}
                   onChange={(e) => setStockType(e.target.value)}
                   className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800"
@@ -294,11 +298,13 @@ export default function NewDispatchModal({
 
               {/* Bilty Number (Manual / Auto) */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                <label htmlFor="dispatch_bilty_no" className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                   <span>Bilty Number (بلٹی نمبر)</span>
                   <span className="text-[10px] text-slate-400 font-mono">Optional / Auto if empty</span>
                 </label>
                 <input
+                  id="dispatch_bilty_no"
+                  name="biltyNo"
                   type="text"
                   value={biltyNo}
                   onChange={(e) => setBiltyNo(e.target.value)}
@@ -309,10 +315,12 @@ export default function NewDispatchModal({
 
               {/* Goods Description */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_material" className="block text-xs font-bold text-slate-700 mb-1">
                   Material / Goods Description <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_material"
+                  name="materialDescription"
                   type="text"
                   value={materialDescription}
                   onChange={(e) => setMaterialDescription(e.target.value)}
@@ -324,11 +332,13 @@ export default function NewDispatchModal({
 
               {/* Quantity & Unit Type Selector */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_quantity" className="block text-xs font-bold text-slate-700 mb-1">
                   Quantity & Packaging Unit <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id="dispatch_quantity"
+                    name="quantityBags"
                     type="number"
                     min="1"
                     value={quantityBags}
@@ -338,6 +348,8 @@ export default function NewDispatchModal({
                     required
                   />
                   <select
+                    id="dispatch_unit"
+                    name="quantityUnit"
                     value={quantityUnit}
                     onChange={(e: any) => setQuantityUnit(e.target.value)}
                     className="w-1/3 px-2 py-2 text-xs font-bold border border-slate-300 rounded-xl bg-slate-50"
@@ -354,11 +366,13 @@ export default function NewDispatchModal({
 
               {/* Weight & Weight Slip */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_weight" className="block text-xs font-bold text-slate-700 mb-1">
                   Total Weight (Kg) & Weight Slip No. <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id="dispatch_weight"
+                    name="weightKg"
                     type="number"
                     value={weightKg}
                     onChange={(e) => setWeightKg(e.target.value ? Number(e.target.value) : '')}
@@ -366,6 +380,8 @@ export default function NewDispatchModal({
                     className="w-1/2 px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-mono"
                   />
                   <input
+                    id="dispatch_weight_slip"
+                    name="weightSlipNo"
                     type="text"
                     value={weightSlipNo}
                     onChange={(e) => setWeightSlipNo(e.target.value)}
@@ -389,10 +405,12 @@ export default function NewDispatchModal({
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_truck_no" className="block text-xs font-bold text-slate-700 mb-1">
                   Truck Number <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_truck_no"
+                  name="truckNo"
                   type="text"
                   value={truckNo}
                   onChange={(e) => setTruckNo(e.target.value)}
@@ -403,10 +421,12 @@ export default function NewDispatchModal({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_driver_name" className="block text-xs font-bold text-slate-700 mb-1">
                   Driver Name <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_driver_name"
+                  name="driverName"
                   type="text"
                   value={driverName}
                   onChange={(e) => setDriverName(e.target.value)}
@@ -417,10 +437,12 @@ export default function NewDispatchModal({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_driver_cnic" className="block text-xs font-bold text-slate-700 mb-1">
                   Driver CNIC <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_driver_cnic"
+                  name="driverCnic"
                   type="text"
                   value={driverCnic}
                   onChange={(e) => handleCnicChange(e.target.value)}
@@ -441,10 +463,12 @@ export default function NewDispatchModal({
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_shop_name" className="block text-xs font-bold text-slate-700 mb-1">
                   Shop Name <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_shop_name"
+                  name="shopName"
                   type="text"
                   value={shopName}
                   onChange={(e) => setShopName(e.target.value)}
@@ -455,10 +479,12 @@ export default function NewDispatchModal({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_shopkeeper_name" className="block text-xs font-bold text-slate-700 mb-1">
                   Shopkeeper Name <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_shopkeeper_name"
+                  name="shopkeeperName"
                   type="text"
                   value={shopkeeperName}
                   onChange={(e) => setShopkeeperName(e.target.value)}
@@ -469,10 +495,12 @@ export default function NewDispatchModal({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_destination_city" className="block text-xs font-bold text-slate-700 mb-1">
                   Destination City <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_destination_city"
+                  name="destinationCity"
                   type="text"
                   value={destinationCity}
                   onChange={(e) => setDestinationCity(e.target.value)}
@@ -492,10 +520,12 @@ export default function NewDispatchModal({
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_rent_amount" className="block text-xs font-bold text-slate-700 mb-1">
                   Total Freight (PKR) <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="dispatch_rent_amount"
+                  name="rentAmountPkr"
                   type="number"
                   value={rentAmountPkr}
                   onChange={(e) => setRentAmountPkr(e.target.value ? Number(e.target.value) : '')}
@@ -506,10 +536,12 @@ export default function NewDispatchModal({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_advance_paid" className="block text-xs font-bold text-slate-700 mb-1">
                   Advance Paid (PKR)
                 </label>
                 <input
+                  id="dispatch_advance_paid"
+                  name="advancePaidPkr"
                   type="number"
                   value={advancePaidPkr}
                   onChange={(e) => setAdvancePaidPkr(e.target.value ? Number(e.target.value) : '')}
@@ -520,10 +552,12 @@ export default function NewDispatchModal({
 
               {/* Dispatch Date */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_date" className="block text-xs font-bold text-slate-700 mb-1">
                   Dispatch Date (روانگی تاریخ)
                 </label>
                 <input
+                  id="dispatch_date"
+                  name="dispatchDate"
                   type="date"
                   value={dispatchDate}
                   onChange={(e) => setDispatchDate(e.target.value)}
@@ -533,10 +567,12 @@ export default function NewDispatchModal({
 
               {/* Payment Date */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label htmlFor="dispatch_payment_date" className="block text-xs font-bold text-slate-700 mb-1">
                   Payment / Due Date
                 </label>
                 <input
+                  id="dispatch_payment_date"
+                  name="paymentDate"
                   type="date"
                   value={paymentDate}
                   onChange={(e) => setPaymentDate(e.target.value)}

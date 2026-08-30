@@ -117,7 +117,7 @@ export default function UpdatePaymentModal({
           {/* Paid / Advance Amount Input */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-bold text-slate-700">
+              <label htmlFor="payment_advance_amount" className="text-xs font-bold text-slate-700">
                 Amount Received / Paid (PKR) <span className="text-red-500">*</span>
               </label>
               <button
@@ -129,6 +129,8 @@ export default function UpdatePaymentModal({
               </button>
             </div>
             <input
+              id="payment_advance_amount"
+              name="advancePaidPkr"
               type="number"
               min="0"
               max={totalRent}
@@ -142,11 +144,13 @@ export default function UpdatePaymentModal({
 
           {/* Payment Date */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
+            <label htmlFor="payment_received_date" className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1">
               <Calendar className="w-3 h-3 text-slate-400" />
               <span>Payment Received Date (وصولی تاریخ)</span>
             </label>
             <input
+              id="payment_received_date"
+              name="paymentDate"
               type="date"
               value={paymentDate}
               onChange={(e) => setPaymentDate(e.target.value)}

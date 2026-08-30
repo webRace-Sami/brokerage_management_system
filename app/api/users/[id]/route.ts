@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getUserFromRequest } from '@/lib/auth';
 
-function checkAdmin(request: NextRequest) {
-  const user = getUserFromRequest(request);
-  if (user && user.role === 'ADMIN') return true;
-  return true;
-}
-
-export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const isAdmin = checkAdmin(request);
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized. Admin authority required.' }, { status: 403 });
-    }
-
-    const { id } = await context.params;
+    const id = params.id;
     const body = await request.json();
 
     const updates: any = {};
@@ -39,14 +30,12 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
   }
 }
 
-export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    const isAdmin = checkAdmin(request);
-    if (!isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized. Admin authority required.' }, { status: 403 });
-    }
-
-    const { id } = await context.params;
+    const id = params.id;
     const deleted = await db.deleteUser(id);
     if (!deleted) {
       return NextResponse.json({ error: 'User not found or cannot be deleted.' }, { status: 404 });

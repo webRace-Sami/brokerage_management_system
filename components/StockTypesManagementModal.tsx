@@ -209,10 +209,12 @@ export default function StockTypesManagementModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="stock_type_name" className="block text-xs font-bold text-slate-700 mb-1">
                     Commodity Name <span className="text-red-500">*</span>
                   </label>
                   <input
+                    id="stock_type_name"
+                    name="stockTypeName"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -223,10 +225,12 @@ export default function StockTypesManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="stock_type_urdu" className="block text-xs font-bold text-slate-700 mb-1">
                     Urdu Label
                   </label>
                   <input
+                    id="stock_type_urdu"
+                    name="stockTypeUrdu"
                     type="text"
                     value={nameUrdu}
                     onChange={(e) => setNameUrdu(e.target.value)}
@@ -236,10 +240,12 @@ export default function StockTypesManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="stock_type_unit" className="block text-xs font-bold text-slate-700 mb-1">
                     Default Unit Type
                   </label>
                   <select
+                    id="stock_type_unit"
+                    name="stockTypeUnit"
                     value={defaultUnit}
                     onChange={(e: any) => setDefaultUnit(e.target.value)}
                     className="w-full px-3 py-2 text-xs border border-purple-200 rounded-xl"
@@ -254,10 +260,12 @@ export default function StockTypesManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="stock_type_weight" className="block text-xs font-bold text-slate-700 mb-1">
                     Standard Weight (Kg)
                   </label>
                   <input
+                    id="stock_type_weight"
+                    name="stockTypeWeight"
                     type="number"
                     value={standardWeightKg}
                     onChange={(e) => setStandardWeightKg(e.target.value ? Number(e.target.value) : '')}
@@ -267,10 +275,12 @@ export default function StockTypesManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="stock_type_price" className="block text-xs font-bold text-slate-700 mb-1">
                     Default Unit Price (PKR)
                   </label>
                   <input
+                    id="stock_type_price"
+                    name="stockTypePrice"
                     type="number"
                     value={defaultUnitPricePkr}
                     onChange={(e) => setDefaultUnitPricePkr(e.target.value ? Number(e.target.value) : '')}
@@ -280,10 +290,12 @@ export default function StockTypesManagementModal({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label htmlFor="stock_type_category" className="block text-xs font-bold text-slate-700 mb-1">
                     Category Group
                   </label>
                   <input
+                    id="stock_type_category"
+                    name="stockTypeCategory"
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}

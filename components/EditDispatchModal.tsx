@@ -144,8 +144,10 @@ export default function EditDispatchModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-slate-700 mb-1">Goods Description</label>
+              <label htmlFor="edit_material_desc" className="block text-xs font-bold text-slate-700 mb-1">Goods Description</label>
               <input
+                id="edit_material_desc"
+                name="materialDescription"
                 type="text"
                 value={materialDescription}
                 onChange={(e) => setMaterialDescription(e.target.value)}
@@ -155,8 +157,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Packaging Unit</label>
+              <label htmlFor="edit_quantity_unit" className="block text-xs font-bold text-slate-700 mb-1">Packaging Unit</label>
               <select
+                id="edit_quantity_unit"
+                name="quantityUnit"
                 value={quantityUnit}
                 onChange={(e: any) => setQuantityUnit(e.target.value)}
                 className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-white font-bold"
@@ -171,8 +175,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Weight Slip No. (کانٹا پرچی)</label>
+              <label htmlFor="edit_weight_slip" className="block text-xs font-bold text-slate-700 mb-1">Weight Slip No. (کانٹا پرچی)</label>
               <input
+                id="edit_weight_slip"
+                name="weightSlipNo"
                 type="text"
                 value={weightSlipNo}
                 onChange={(e) => setWeightSlipNo(e.target.value)}
@@ -182,8 +188,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Truck Number</label>
+              <label htmlFor="edit_truck_no" className="block text-xs font-bold text-slate-700 mb-1">Truck Number</label>
               <input
+                id="edit_truck_no"
+                name="truckNo"
                 type="text"
                 value={truckNo}
                 onChange={(e) => setTruckNo(e.target.value)}
@@ -193,8 +201,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Driver Name</label>
+              <label htmlFor="edit_driver_name" className="block text-xs font-bold text-slate-700 mb-1">Driver Name</label>
               <input
+                id="edit_driver_name"
+                name="driverName"
                 type="text"
                 value={driverName}
                 onChange={(e) => setDriverName(e.target.value)}
@@ -204,8 +214,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Driver CNIC</label>
+              <label htmlFor="edit_driver_cnic" className="block text-xs font-bold text-slate-700 mb-1">Driver CNIC</label>
               <input
+                id="edit_driver_cnic"
+                name="driverCnic"
                 type="text"
                 value={driverCnic}
                 onChange={(e) => setDriverCnic(e.target.value)}
@@ -215,8 +227,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Driver Phone</label>
+              <label htmlFor="edit_driver_phone" className="block text-xs font-bold text-slate-700 mb-1">Driver Phone</label>
               <input
+                id="edit_driver_phone"
+                name="driverPhone"
                 type="text"
                 value={driverPhone}
                 onChange={(e) => setDriverPhone(e.target.value)}
@@ -225,8 +239,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Shop Name</label>
+              <label htmlFor="edit_shop_name" className="block text-xs font-bold text-slate-700 mb-1">Shop Name</label>
               <input
+                id="edit_shop_name"
+                name="shopName"
                 type="text"
                 value={shopName}
                 onChange={(e) => setShopName(e.target.value)}
@@ -236,8 +252,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Destination City</label>
+              <label htmlFor="edit_destination_city" className="block text-xs font-bold text-slate-700 mb-1">Destination City</label>
               <input
+                id="edit_destination_city"
+                name="destinationCity"
                 type="text"
                 value={destinationCity}
                 onChange={(e) => setDestinationCity(e.target.value)}
@@ -247,8 +265,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Total Rent (PKR)</label>
+              <label htmlFor="edit_rent_amount" className="block text-xs font-bold text-slate-700 mb-1">Total Rent (PKR)</label>
               <input
+                id="edit_rent_amount"
+                name="rentAmountPkr"
                 type="number"
                 value={rentAmountPkr}
                 onChange={(e) => setRentAmountPkr(e.target.value ? Number(e.target.value) : '')}
@@ -258,8 +278,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Advance Paid (PKR)</label>
+              <label htmlFor="edit_advance_paid" className="block text-xs font-bold text-slate-700 mb-1">Advance Paid (PKR)</label>
               <input
+                id="edit_advance_paid"
+                name="advancePaidPkr"
                 type="number"
                 value={advancePaidPkr}
                 onChange={(e) => setAdvancePaidPkr(e.target.value ? Number(e.target.value) : '')}
@@ -268,8 +290,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Dispatch Date</label>
+              <label htmlFor="edit_dispatch_date" className="block text-xs font-bold text-slate-700 mb-1">Dispatch Date</label>
               <input
+                id="edit_dispatch_date"
+                name="dispatchDate"
                 type="date"
                 value={dispatchDate}
                 onChange={(e) => setDispatchDate(e.target.value)}
@@ -278,8 +302,10 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Payment Date</label>
+              <label htmlFor="edit_payment_date" className="block text-xs font-bold text-slate-700 mb-1">Payment Date</label>
               <input
+                id="edit_payment_date"
+                name="paymentDate"
                 type="date"
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}

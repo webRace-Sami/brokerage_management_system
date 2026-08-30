@@ -74,6 +74,17 @@
       "standardWeightKg": 50,
       "defaultUnitPricePkr": 4600,
       "description": "FFC/Engro Sona Urea and DAP 50kg Bags."
+    },
+    {
+      "id": "st_1788095325634",
+      "name": "WebApp",
+      "nameUrdu": "WebApp",
+      "code": "ST-WEB",
+      "category": "Virtual ",
+      "defaultUnit": "Pcs",
+      "standardWeightKg": 50,
+      "defaultUnitPricePkr": 10000,
+      "description": ""
     }
   ],
   "users": [
@@ -146,6 +157,24 @@
       "allocatedQuotaBags": 650,
       "allocatedQuotaWeight": 812.5,
       "commissionRate": 2
+    },
+    {
+      "id": "broker_main_1788095250387",
+      "name": "SAMI ULLAH",
+      "type": "MAIN_BROKER",
+      "phone": "03428090699",
+      "city": "Gujranwala",
+      "stockTypes": [
+        "General Cargo"
+      ],
+      "ownAvailableBags": 1,
+      "ownAvailableWeight": 1.25,
+      "manualStockValuationPkr": 10000,
+      "isAttachedToMainBroker": true,
+      "allocatedQuotaBags": 0,
+      "allocatedQuotaWeight": 0,
+      "commissionRate": 0,
+      "createdAt": "2026-08-30T13:07:30.387Z"
     }
   ],
   "stockItems": [

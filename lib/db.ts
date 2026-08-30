@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { getMongoDb } from './mongodb';
 
 // Initial Company & Business Profile
 const initialCompanySettings = {
@@ -481,6 +482,20 @@ function saveStore(data: any) {
   try {
     fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {}
+
+  // Asynchronously sync to MongoDB Atlas if connected
+  getMongoDb().then(async (mdb) => {
+    if (!mdb) return;
+    try {
+      await mdb.collection('system_store').updateOne(
+        { _id: 'main_store' as any },
+        { $set: { data, updatedAt: new Date() } },
+        { upsert: true }
+      );
+    } catch (err) {
+      console.error('MongoDB Atlas sync error:', err);
+    }
+  }).catch(() => {});
 }
 
 export const db = {
@@ -678,7 +693,7 @@ export const db = {
       stockTypes: Array.isArray(brokerData.stockTypes) && brokerData.stockTypes.length > 0 ? brokerData.stockTypes : ['General Cargo'],
       ownAvailableBags: bags,
       ownAvailableWeight: Number(brokerData.ownAvailableWeight) || (bags * 50) / 40,
-      manualStockValuationPkr: brokerData.manualStockValuationPkr !== undefined && brokerData.manualStockValuationPkr !== '' ? Number(brokerData.manualStockValuationPkr) : undefined,
+      manualStockValuationPkr: brokerData.manualStockValuationPkr !== undefined && brokerData.manualStockValuationPkr !== null ? Number(brokerData.manualStockValuationPkr) : undefined,
       isAttachedToMainBroker: isMain ? true : (brokerData.isAttachedToMainBroker !== undefined ? brokerData.isAttachedToMainBroker : true),
       attachedToMainBrokerId: isMain ? undefined : brokerData.attachedToMainBrokerId,
       allocatedQuotaBags: isMain ? 0 : (Number(brokerData.allocatedQuotaBags) || 500),

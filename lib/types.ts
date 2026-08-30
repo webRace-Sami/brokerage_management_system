@@ -110,6 +110,7 @@ export interface DispatchData {
 export interface DashboardSummary {
   company: CompanySettings;
   stockTypes: StockTypeData[];
+  stockItems?: StockItemData[];
   mainBrokers: Array<{
     id: string;
     name: string;

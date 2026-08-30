@@ -1,0 +1,105 @@
+// Prisma Schema for Madina Goods Transport Company Brokerage Management System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      String   @default("EMPLOYEE") // "ADMIN" or "EMPLOYEE"
+  phone     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Broker {
+  id                  String   @id @default(cuid())
+  name                String
+  type                String   // "MAIN_BROKER" or "CO_BROKER"
+  phone               String
+  city                String   @default("Chiniot")
+  allocatedQuotaBags  Int      @default(0)
+  allocatedQuotaWeight Float   @default(0) // in Maunds
+  commissionRate      Float    @default(0) // in percentage
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model StockItem {
+  id                  String   @id @default(cuid())
+  code                String   @unique // e.g. IRN-WHT-01
+  name                String
+  category            String
+  standardBagWeightKg Float    @default(50.0)
+  unitPricePkr        Float
+  description         String
+  totalBagsInward     Int      @default(0)
+  totalWeightKg       Float    @default(0)
+  availableBags       Int      @default(0)
+  availableWeightKg   Float    @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model StockInward {
+  id                 String   @id @default(cuid())
+  irnCode            String
+  stockItemId        String
+  brokerId           String
+  materialName       String
+  quantityBags       Int
+  weightKg           Float
+  weightMaunds       Float
+  unitRatePkr        Float
+  totalValuationPkr  Float
+  supplierName       String
+  vehicleNo          String
+  warehouseLocation  String   @default("Sargodha Road Godown #1, Chiniot")
+  receivedBy         String
+  inwardDate         DateTime @default(now())
+  notes              String?
+  createdAt          DateTime @default(now())
+}
+
+model Dispatch {
+  id                 String   @id @default(cuid())
+  srNo               Int
+  biltyNo            String   @unique
+  brokerId           String
+  brokerName         String
+  brokerType         String   // "MAIN_BROKER" or "CO_BROKER"
+  stockItemId        String?
+  materialDescription String
+  quantityBags       Int
+  weightKg           Float
+  weightMaunds       Float
+  truckNo            String
+  driverName         String
+  driverCnic         String
+  driverPhone        String?
+  shopName           String
+  shopkeeperName     String
+  shopkeeperPhone    String?
+  destinationAddress String
+  destinationCity    String
+  rentAmountPkr      Float
+  rentStatus         String   @default("PENDING") // "PAID" or "PENDING"
+  advancePaidPkr     Float    @default(0)
+  balancePkr         Float    @default(0)
+  paymentMethod      String   @default("Cash")
+  dispatchedBy       String
+  dispatchDate       DateTime @default(now())
+  remarks            String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

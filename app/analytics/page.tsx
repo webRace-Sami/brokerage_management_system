@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 import Link from 'next/link';
 import {
   Chart as ChartJS,
@@ -28,7 +28,7 @@ import {
   RefreshCw,
   Building,
 } from 'lucide-react';
-import { DashboardSummary, DispatchData, UserProfile } from '@/lib/types';
+import { DashboardSummary, DispatchData, UserProfile } from '../../lib/types';
 
 ChartJS.register(
   CategoryScale,

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Truck, ShieldCheck, UserCheck, Lock, User, KeyRound, AlertCircle, ArrowRight, Check } from 'lucide-react';
-import Footer from '@/components/Footer';
+import Footer from '../../components/Footer';
 
 export default function LoginPage() {
   const router = useRouter();

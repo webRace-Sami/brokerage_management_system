@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Truck, ShieldCheck, ArrowRight, Package, MapPin, Phone, Building2, BarChart2, CheckCircle } from 'lucide-react';
-import Footer from '@/components/Footer';
+import Footer from '../components/Footer';
 
 export default function HomePage() {
   return (

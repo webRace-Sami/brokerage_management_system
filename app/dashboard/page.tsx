@@ -2,20 +2,20 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Navbar from '@/components/Navbar';
-import SummaryCards from '@/components/SummaryCards';
-import GrandTotalsBar from '@/components/GrandTotalsBar';
-import DispatchTable from '@/components/DispatchTable';
-import NewDispatchModal from '@/components/NewDispatchModal';
-import BrokerManagementModal from '@/components/BrokerManagementModal';
-import UserManagementModal from '@/components/UserManagementModal';
-import StockTypesManagementModal from '@/components/StockTypesManagementModal';
-import CompanySettingsModal from '@/components/CompanySettingsModal';
-import BiltyPrintModal from '@/components/BiltyPrintModal';
-import EditDispatchModal from '@/components/EditDispatchModal';
-import UpdatePaymentModal from '@/components/UpdatePaymentModal';
-import DeleteConfirmModal from '@/components/DeleteConfirmModal';
-import Footer from '@/components/Footer';
+import Navbar from '../../components/Navbar';
+import SummaryCards from '../../components/SummaryCards';
+import GrandTotalsBar from '../../components/GrandTotalsBar';
+import DispatchTable from '../../components/DispatchTable';
+import NewDispatchModal from '../../components/NewDispatchModal';
+import BrokerManagementModal from '../../components/BrokerManagementModal';
+import UserManagementModal from '../../components/UserManagementModal';
+import StockTypesManagementModal from '../../components/StockTypesManagementModal';
+import CompanySettingsModal from '../../components/CompanySettingsModal';
+import BiltyPrintModal from '../../components/BiltyPrintModal';
+import EditDispatchModal from '../../components/EditDispatchModal';
+import UpdatePaymentModal from '../../components/UpdatePaymentModal';
+import DeleteConfirmModal from '../../components/DeleteConfirmModal';
+import Footer from '../../components/Footer';
 import {
   UserProfile,
   DashboardSummary,
@@ -24,7 +24,7 @@ import {
   StockItemData,
   StockTypeData,
   CompanySettings,
-} from '@/lib/types';
+} from '../../lib/types';
 
 export default function DashboardPage() {
   const router = useRouter();

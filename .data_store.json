@@ -1,6 +1,6 @@
 {
   "companySettings": {
-    "name": "Madina Goods Transport Company",
+    "name": "Madina Goods Transport Co",
     "phone": "0300-6501234",
     "uan": "047-6331234",
     "location": "Sargodha Road Bypass, Chiniot, Punjab, Pakistan",
@@ -16,7 +16,7 @@
       "code": "ST-SUG",
       "category": "Food & Sweeteners",
       "defaultUnit": "Bags",
-      "standardWeightKg": 50,
+      "standardWeightKg": 10,
       "defaultUnitPricePkr": 7400,
       "description": "Grade-1 White Refined Sugar in 50kg Bags."
     },
@@ -112,8 +112,8 @@
         "Basmati Rice (چاول)",
         "Fertilizer & DAP (کھاد سونا یوریا)"
       ],
-      "ownAvailableBags": 4500,
-      "ownAvailableWeight": 5625,
+      "ownAvailableBags": 450045,
+      "ownAvailableWeight": 562556.25,
       "manualStockValuationPkr": 39500000,
       "isAttachedToMainBroker": true,
       "allocatedQuotaBags": 0,
@@ -472,44 +472,6 @@
       "dispatchDate": "2026-08-30",
       "remarks": "",
       "createdAt": "2026-08-30T10:47:33.940Z"
-    },
-    {
-      "id": "disp_1788092150988",
-      "irn": "2026083007",
-      "srNo": 7,
-      "biltyNo": "MGT-9944",
-      "weightSlipNo": "771234",
-      "quantityUnit": "Bags",
-      "rentAmountPkr": 24000,
-      "advancePaidPkr": 24000,
-      "remainingRentPkr": 0,
-      "balancePkr": 0,
-      "rentStatus": "PAID",
-      "dispatchDate": "2026-08-30",
-      "paymentDate": "2026-08-30",
-      "createdAt": "2026-08-30T12:15:50.988Z",
-      "brokerId": "broker_main_1",
-      "brokerName": "Madina Main Broker (Haji Rasheed & Sons)",
-      "brokerType": "MAIN_BROKER",
-      "stockSource": "MAIN_BROKER_STOCK",
-      "stockItemId": null,
-      "stockType": "Wheat (گندم)",
-      "materialDescription": "Clean Wheat Standard",
-      "quantityBags": 140,
-      "weightKg": 7000,
-      "weightMaunds": 175,
-      "truckNo": "FD-1122",
-      "driverName": "Tariq Mehmood",
-      "driverCnic": "33202-9988776-5",
-      "driverPhone": "",
-      "shopName": "Al-Barkat Floor Depo",
-      "shopkeeperName": "Haji Asif",
-      "shopkeeperPhone": "",
-      "destinationAddress": "Main City Bazaar",
-      "destinationCity": "Chiniot",
-      "paymentMethod": "Cash Cleared",
-      "dispatchedBy": "Munshi Muhammad Aslam",
-      "remarks": ""
     }
   ]
 }

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -44,6 +46,13 @@ export async function PUT(
   }
 }
 
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return PUT(request, { params });
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -73,4 +82,11 @@ export async function DELETE(
       { status: 500 }
     );
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: { 'Allow': 'GET, POST, PUT, DELETE, OPTIONS' },
+  });
 }

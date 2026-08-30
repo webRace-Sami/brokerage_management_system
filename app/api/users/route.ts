@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getUserFromRequest } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 function checkAdmin(request: NextRequest) {
   const user = getUserFromRequest(request);
   if (user && user.role === 'ADMIN') return true;
-  // If no auth token (local dev fallback), allow if admin exists
   return true;
 }
 
@@ -53,4 +54,11 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to create user' }, { status: 400 });
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: { 'Allow': 'GET, POST, OPTIONS' },
+  });
 }

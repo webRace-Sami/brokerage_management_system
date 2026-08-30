@@ -1,10 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  return handlePayment(request, params.id);
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return handlePayment(request, params.id);
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return handlePayment(request, params.id);
+}
+
+async function handlePayment(request: NextRequest, id: string) {
   try {
     const { advancePaidPkr, paymentMethod, paymentDate } = await request.json();
 
@@ -16,7 +36,7 @@ export async function POST(
     }
 
     const updated = await db.updatePayment(
-      params.id,
+      id,
       Number(advancePaidPkr),
       paymentMethod,
       paymentDate
@@ -38,4 +58,11 @@ export async function POST(
       { status: 500 }
     );
   }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: { 'Allow': 'POST, PUT, PATCH, OPTIONS' },
+  });
 }

@@ -18,6 +18,8 @@ export default function EditDispatchModal({
   dispatch,
 }: EditDispatchModalProps) {
   const [materialDescription, setMaterialDescription] = useState('');
+  const [quantityUnit, setQuantityUnit] = useState<'Bags' | 'Nugs' | 'Box' | 'Drums' | 'Bales' | 'Pcs'>('Bags');
+  const [weightSlipNo, setWeightSlipNo] = useState('');
   const [truckNo, setTruckNo] = useState('');
   const [driverName, setDriverName] = useState('');
   const [driverCnic, setDriverCnic] = useState('');
@@ -31,6 +33,8 @@ export default function EditDispatchModal({
   const [rentStatus, setRentStatus] = useState<'PAID' | 'PENDING'>('PENDING');
   const [advancePaidPkr, setAdvancePaidPkr] = useState<number | ''>('');
   const [paymentMethod, setPaymentMethod] = useState('');
+  const [dispatchDate, setDispatchDate] = useState('');
+  const [paymentDate, setPaymentDate] = useState('');
   const [remarks, setRemarks] = useState('');
 
   const [loading, setLoading] = useState(false);
@@ -39,6 +43,8 @@ export default function EditDispatchModal({
   useEffect(() => {
     if (dispatch) {
       setMaterialDescription(dispatch.materialDescription || '');
+      setQuantityUnit(dispatch.quantityUnit || 'Bags');
+      setWeightSlipNo(dispatch.weightSlipNo || '');
       setTruckNo(dispatch.truckNo || '');
       setDriverName(dispatch.driverName || '');
       setDriverCnic(dispatch.driverCnic || '');
@@ -52,11 +58,15 @@ export default function EditDispatchModal({
       setRentStatus(dispatch.rentStatus || 'PENDING');
       setAdvancePaidPkr(dispatch.advancePaidPkr || 0);
       setPaymentMethod(dispatch.paymentMethod || 'Cash');
+      setDispatchDate(dispatch.dispatchDate || '');
+      setPaymentDate(dispatch.paymentDate || '');
       setRemarks(dispatch.remarks || '');
     }
   }, [dispatch]);
 
   if (!isOpen || !dispatch) return null;
+
+  const irnNumber = dispatch.irn || dispatch.srNo;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +79,8 @@ export default function EditDispatchModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           materialDescription,
+          quantityUnit,
+          weightSlipNo,
           truckNo,
           driverName,
           driverCnic,
@@ -82,6 +94,8 @@ export default function EditDispatchModal({
           rentStatus,
           advancePaidPkr: Number(advancePaidPkr) || 0,
           paymentMethod,
+          dispatchDate,
+          paymentDate,
           remarks,
         }),
       });
@@ -110,9 +124,9 @@ export default function EditDispatchModal({
             </div>
             <div>
               <h3 className="font-extrabold text-base sm:text-lg text-white font-['Outfit']">
-                Edit Dispatch Entry (تبدیلی اندراج) - {dispatch.biltyNo}
+                Edit Dispatch Entry (تبدیلی اندراج) - {dispatch.irn || `IRN#${dispatch.srNo}`}
               </h3>
-              <p className="text-xs text-slate-400">Sr #{dispatch.srNo} | Broker: {dispatch.brokerName}</p>
+              <p className="text-xs text-slate-400">Bilty #{dispatch.biltyNo} | Broker: {dispatch.brokerName}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-800">
@@ -128,7 +142,7 @@ export default function EditDispatchModal({
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm">
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-slate-700 mb-1">Goods Description</label>
               <input
@@ -137,6 +151,33 @@ export default function EditDispatchModal({
                 onChange={(e) => setMaterialDescription(e.target.value)}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Packaging Unit</label>
+              <select
+                value={quantityUnit}
+                onChange={(e: any) => setQuantityUnit(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-white font-bold"
+              >
+                <option value="Bags">Bags (بوریاں)</option>
+                <option value="Box">Box (ڈبے)</option>
+                <option value="Nugs">Nugs (نگ)</option>
+                <option value="Drums">Drums (ڈرم)</option>
+                <option value="Bales">Bales (گانٹھیں)</option>
+                <option value="Pcs">Pcs (پیس)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Weight Slip No. (کانٹا پرچی)</label>
+              <input
+                type="text"
+                value={weightSlipNo}
+                onChange={(e) => setWeightSlipNo(e.target.value)}
+                placeholder="Slip: xdk-2983 / 232444"
+                className="w-full px-3 py-2 text-xs border border-amber-300 bg-amber-50/50 rounded-xl font-mono font-bold text-amber-900"
               />
             </div>
 
@@ -195,17 +236,6 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Shopkeeper Name</label>
-              <input
-                type="text"
-                value={shopkeeperName}
-                onChange={(e) => setShopkeeperName(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl"
-                required
-              />
-            </div>
-
-            <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Destination City</label>
               <input
                 type="text"
@@ -217,7 +247,7 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Rent Amount (PKR)</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Total Rent (PKR)</label>
               <input
                 type="number"
                 value={rentAmountPkr}
@@ -228,24 +258,32 @@ export default function EditDispatchModal({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Rent Status</label>
-              <select
-                value={rentStatus}
-                onChange={(e) => setRentStatus(e.target.value as 'PAID' | 'PENDING')}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl font-semibold"
-              >
-                <option value="PAID">PAID</option>
-                <option value="PENDING">PENDING</option>
-              </select>
-            </div>
-
-            <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Advance Paid (PKR)</label>
               <input
                 type="number"
                 value={advancePaidPkr}
                 onChange={(e) => setAdvancePaidPkr(e.target.value ? Number(e.target.value) : '')}
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Dispatch Date</label>
+              <input
+                type="date"
+                value={dispatchDate}
+                onChange={(e) => setDispatchDate(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Payment Date</label>
+              <input
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl font-mono"
               />
             </div>
           </div>

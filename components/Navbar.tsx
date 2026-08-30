@@ -3,14 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Truck, BarChart3, LayoutDashboard, Database, LogOut, ShieldCheck, UserCheck, Clock } from 'lucide-react';
-import { UserProfile } from '@/lib/types';
+import { Truck, BarChart3, LayoutDashboard, LogOut, ShieldCheck, UserCheck, Clock } from 'lucide-react';
+import { UserProfile, CompanySettings } from '@/lib/types';
 
 interface NavbarProps {
   user?: UserProfile | null;
+  company?: CompanySettings | null;
 }
 
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar({ user, company }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [time, setTime] = useState<string>('');
@@ -44,6 +45,8 @@ export default function Navbar({ user }: NavbarProps) {
     }
   };
 
+  const companyName = company?.name || 'Madina Goods Transport Company';
+
   return (
     <header className="bg-slate-900 text-white shadow-lg border-b border-slate-800 sticky top-0 z-40">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,7 +60,7 @@ export default function Navbar({ user }: NavbarProps) {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white font-['Outfit']">
-                    Madina Goods Transport Company
+                    {companyName}
                   </span>
                   <span className="bg-emerald-500/20 text-emerald-300 text-xs px-2 py-0.5 rounded-full font-semibold border border-emerald-500/30">
                     Chiniot

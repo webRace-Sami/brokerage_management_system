@@ -1,80 +1,117 @@
-import prisma from './prisma';
 import fs from 'fs';
 import path from 'path';
 
-// Initial Mock Seed Data
+// Initial Company & Business Profile
+const initialCompanySettings = {
+  name: 'Madina Goods Transport Company',
+  phone: '0300-6501234',
+  uan: '047-6331234',
+  location: 'Sargodha Road Bypass, Chiniot, Punjab, Pakistan',
+  description: 'Premier Goods Transport, Logistics & Brokerage Management Portal serving nationwide freight routes from Chiniot.',
+  establishedYear: '1998',
+  terms: 'مال کی لوڈنگ و انلوڈنگ کے دوران مکمل احتیاط کی جاتی ہے۔ کسی بھی حادثہ کی صورت میں بلٹی شرائط لاگو ہوں گی۔',
+};
+
+// Initial Stock Types
+const initialStockTypes = [
+  {
+    id: 'st_sugar',
+    name: 'Sugar (چینی)',
+    nameUrdu: 'چینی ریفائنڈ',
+    code: 'ST-SUG',
+    category: 'Food & Sweeteners',
+    defaultUnit: 'Bags' as const,
+    standardWeightKg: 50,
+    defaultUnitPricePkr: 7200,
+    description: 'Grade-1 White Refined Sugar in 50kg Bags from Punjab Mills.',
+  },
+  {
+    id: 'st_oil',
+    name: 'Edible Oil & Ghee (تیل و گھی)',
+    nameUrdu: 'کوکنگ آئل و بناسپتی گھی',
+    code: 'ST-OIL',
+    category: 'Edible Oils',
+    defaultUnit: 'Drums' as const,
+    standardWeightKg: 16,
+    defaultUnitPricePkr: 8500,
+    description: 'Cooking Oil and Banaspati Ghee in 16kg Tins, Drums & Cartons.',
+  },
+  {
+    id: 'st_wheat',
+    name: 'Wheat (گندم)',
+    nameUrdu: 'گندم سپریم',
+    code: 'ST-WHT',
+    category: 'Grains & Agriculture',
+    defaultUnit: 'Bags' as const,
+    standardWeightKg: 50,
+    defaultUnitPricePkr: 5400,
+    description: 'Punjab Passco standard agricultural wheat 50kg bags.',
+  },
+  {
+    id: 'st_rice',
+    name: 'Basmati Rice (چاول)',
+    nameUrdu: 'سپر کرنیل چاول',
+    code: 'ST-RIC',
+    category: 'Food Grains',
+    defaultUnit: 'Bags' as const,
+    standardWeightKg: 50,
+    defaultUnitPricePkr: 14800,
+    description: 'Export quality Super Kernel Basmati Rice 50kg bags.',
+  },
+  {
+    id: 'st_cotton',
+    name: 'Raw Cotton & Bales (روئی و پھٹی)',
+    nameUrdu: 'پھٹی و روئی گانٹھیں',
+    code: 'ST-COT',
+    category: 'Textile Raw Material',
+    defaultUnit: 'Bales' as const,
+    standardWeightKg: 100,
+    defaultUnitPricePkr: 28500,
+    description: 'Pressed Raw Cotton Bales for Textile Spinning Mills.',
+  },
+  {
+    id: 'st_fertilizer',
+    name: 'Fertilizer & DAP (کھاد سونا یوریا)',
+    nameUrdu: 'یوریا کھاد',
+    code: 'ST-FER',
+    category: 'Agriculture Chemicals',
+    defaultUnit: 'Bags' as const,
+    standardWeightKg: 50,
+    defaultUnitPricePkr: 4600,
+    description: 'FFC/Engro Sona Urea and DAP 50kg Bags.',
+  },
+];
+
+// Active Users: Only Admin maintained as requested (demo munshis removed)
 const initialUsers = [
   {
     id: 'user_admin',
     name: 'Haji Abdul Rehman (Admin)',
     username: 'admin',
     email: 'admin@madinagoods.com',
-    password: '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v', // MadinaAdmin@2026!
+    password: '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v',
     plainPassword: 'MadinaAdmin@2026!',
     role: 'ADMIN' as const,
     phone: '0300-6501234',
-  },
-  {
-    id: 'user_munshi1',
-    name: 'Munshi Muhammad Aslam',
-    username: 'munshi1',
-    email: 'aslam@madinagoods.com',
-    password: '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v', // MunshiPass@2026
-    plainPassword: 'MunshiPass@2026',
-    role: 'EMPLOYEE' as const,
-    phone: '0301-7890123',
-  },
-  {
-    id: 'user_munshi2',
-    name: 'Munshi Tariq Mehmood',
-    username: 'munshi2',
-    email: 'tariq@madinagoods.com',
-    password: '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v',
-    plainPassword: 'MunshiPass@2026',
-    role: 'EMPLOYEE' as const,
-    phone: '0302-3456789',
-  },
-  {
-    id: 'user_munshi3',
-    name: 'Munshi Imran Zafar',
-    username: 'munshi3',
-    email: 'imran@madinagoods.com',
-    password: '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v',
-    plainPassword: 'MunshiPass@2026',
-    role: 'EMPLOYEE' as const,
-    phone: '0303-9012345',
-  },
-  {
-    id: 'user_munshi4',
-    name: 'Munshi Bilal Gujjar',
-    username: 'munshi4',
-    email: 'bilal@madinagoods.com',
-    password: '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v',
-    plainPassword: 'MunshiPass@2026',
-    role: 'EMPLOYEE' as const,
-    phone: '0304-4567890',
-  },
-  {
-    id: 'user_munshi5',
-    name: 'Munshi Waqas Ahmed',
-    username: 'munshi5',
-    email: 'waqas@madinagoods.com',
-    password: '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v',
-    plainPassword: 'MunshiPass@2026',
-    role: 'EMPLOYEE' as const,
-    phone: '0305-1234567',
+    createdAt: '2026-08-28T08:00:00.000Z',
   },
 ];
 
+// Initial Brokers
 const initialBrokers = [
   {
-    id: 'broker_main',
+    id: 'broker_main_1',
     name: 'Madina Main Broker (Haji Rasheed & Sons)',
     type: 'MAIN_BROKER' as const,
     phone: '0300-9876543',
     city: 'Chiniot',
-    allocatedQuotaBags: 5000,
-    allocatedQuotaWeight: 6250,
+    stockTypes: ['Wheat (گندم)', 'Basmati Rice (چاول)', 'Fertilizer & DAP (کھاد سونا یوریا)'],
+    ownAvailableBags: 4500,
+    ownAvailableWeight: 5625,
+    manualStockValuationPkr: 39500000,
+    isAttachedToMainBroker: true,
+    allocatedQuotaBags: 0,
+    allocatedQuotaWeight: 0,
     commissionRate: 0,
   },
   {
@@ -83,6 +120,12 @@ const initialBrokers = [
     type: 'CO_BROKER' as const,
     phone: '0301-4455667',
     city: 'Chiniot / Faisalabad',
+    stockTypes: ['Wheat (گندم)', 'Raw Cotton & Bales (روئی و پھٹی)'],
+    ownAvailableBags: 450,
+    ownAvailableWeight: 562.5,
+    manualStockValuationPkr: 5445000,
+    isAttachedToMainBroker: true,
+    attachedToMainBrokerId: 'broker_main_1',
     allocatedQuotaBags: 800,
     allocatedQuotaWeight: 1000,
     commissionRate: 2.5,
@@ -93,22 +136,19 @@ const initialBrokers = [
     type: 'CO_BROKER' as const,
     phone: '0321-7788990',
     city: 'Lahore',
+    stockTypes: ['Sugar (چینی)', 'Edible Oil & Ghee (تیل و گھی)'],
+    ownAvailableBags: 250,
+    ownAvailableWeight: 312.5,
+    manualStockValuationPkr: 3630000,
+    isAttachedToMainBroker: true,
+    attachedToMainBrokerId: 'broker_main_1',
     allocatedQuotaBags: 650,
     allocatedQuotaWeight: 812.5,
     commissionRate: 2.0,
   },
-  {
-    id: 'broker_co3',
-    name: 'Malik Irfan Grain Traders',
-    type: 'CO_BROKER' as const,
-    phone: '0333-2233445',
-    city: 'Sargodha',
-    allocatedQuotaBags: 500,
-    allocatedQuotaWeight: 625,
-    commissionRate: 2.0,
-  },
 ];
 
+// Initial Stock Items
 const initialStockItems = [
   {
     id: 'stock_1',
@@ -177,19 +217,25 @@ const initialStockItems = [
   },
 ];
 
+// Initial Dispatches with format YYYYMMDD01, YYYYMMDD02...
 const initialDispatches = [
   {
     id: 'disp_1',
+    irn: '2026082801',
     srNo: 1,
     biltyNo: 'MGT-2026-1001',
-    brokerId: 'broker_main',
+    brokerId: 'broker_main_1',
     brokerName: 'Madina Main Broker (Haji Rasheed & Sons)',
     brokerType: 'MAIN_BROKER' as const,
+    stockSource: 'MAIN_BROKER_STOCK' as const,
     stockItemId: 'stock_2',
-    materialDescription: 'Basmati Rice Super Kernel (120 Bags)',
+    stockType: 'Basmati Rice (چاول)',
+    materialDescription: 'Basmati Rice Super Kernel',
     quantityBags: 120,
+    quantityUnit: 'Bags' as const,
     weightKg: 6000,
     weightMaunds: 150,
+    weightSlipNo: 'xdk-2983 / 232444',
     truckNo: 'FD-4512',
     driverName: 'Muhammad Ramzan',
     driverCnic: '33202-1456789-3',
@@ -202,25 +248,32 @@ const initialDispatches = [
     rentAmountPkr: 28500,
     rentStatus: 'PAID' as const,
     advancePaidPkr: 28500,
+    remainingRentPkr: 0,
     balancePkr: 0,
     paymentMethod: 'Cash Handover',
-    dispatchedBy: 'Munshi Muhammad Aslam',
-    dispatchDate: new Date('2026-08-28T09:30:00Z').toISOString(),
+    paymentDate: '2026-08-28',
+    dispatchedBy: 'Admin Haji Abdul Rehman',
+    dispatchDate: '2026-08-28',
     remarks: 'Delivered in good condition',
     createdAt: new Date('2026-08-28T09:30:00Z').toISOString(),
   },
   {
     id: 'disp_2',
+    irn: '2026082802',
     srNo: 2,
     biltyNo: 'MGT-2026-1002',
     brokerId: 'broker_co1',
     brokerName: 'Tariq Chinioti Brokery',
     brokerType: 'CO_BROKER' as const,
+    stockSource: 'MAIN_BROKER_STOCK' as const,
     stockItemId: 'stock_1',
-    materialDescription: 'Wheat Grade-A Super (200 Bags)',
+    stockType: 'Wheat (گندم)',
+    materialDescription: 'Wheat Grade-A Super',
     quantityBags: 200,
+    quantityUnit: 'Bags' as const,
     weightKg: 10000,
     weightMaunds: 250,
+    weightSlipNo: 'WS-8921 / 554312',
     truckNo: 'CHT-8921',
     driverName: 'Allah Ditta Khokhar',
     driverCnic: '33201-9876543-1',
@@ -232,26 +285,33 @@ const initialDispatches = [
     destinationCity: 'Lahore',
     rentAmountPkr: 45000,
     rentStatus: 'PENDING' as const,
-    advancePaidPkr: 15000,
-    balancePkr: 30000,
-    paymentMethod: 'Bilty Balance on Delivery',
-    dispatchedBy: 'Munshi Tariq Mehmood',
-    dispatchDate: new Date('2026-08-28T14:15:00Z').toISOString(),
-    remarks: 'Due payment on bilty handover',
+    advancePaidPkr: 20000,
+    remainingRentPkr: 25000,
+    balancePkr: 25000,
+    paymentMethod: 'Advance 20k, Balance on Delivery',
+    paymentDate: '2026-08-28',
+    dispatchedBy: 'Admin Haji Abdul Rehman',
+    dispatchDate: '2026-08-28',
+    remarks: 'PKR 25,000 balance due upon arrival',
     createdAt: new Date('2026-08-28T14:15:00Z').toISOString(),
   },
   {
     id: 'disp_3',
+    irn: '2026082901',
     srNo: 3,
     biltyNo: 'MGT-2026-1003',
     brokerId: 'broker_co2',
     brokerName: 'Bilal Gujjar & Co.',
     brokerType: 'CO_BROKER' as const,
+    stockSource: 'OWN_STOCK' as const,
     stockItemId: 'stock_3',
-    materialDescription: 'Refined White Sugar Premium (150 Bags)',
+    stockType: 'Sugar (چینی)',
+    materialDescription: 'Refined White Sugar Premium',
     quantityBags: 150,
+    quantityUnit: 'Bags' as const,
     weightKg: 7500,
     weightMaunds: 187.5,
+    weightSlipNo: 'KND-4019 / 889102',
     truckNo: 'LHR-7860',
     driverName: 'Sardar Gul Khan',
     driverCnic: '33100-3456712-7',
@@ -264,25 +324,32 @@ const initialDispatches = [
     rentAmountPkr: 22000,
     rentStatus: 'PAID' as const,
     advancePaidPkr: 22000,
+    remainingRentPkr: 0,
     balancePkr: 0,
     paymentMethod: 'Bank Online Slip',
-    dispatchedBy: 'Munshi Imran Zafar',
-    dispatchDate: new Date('2026-08-29T10:00:00Z').toISOString(),
+    paymentDate: '2026-08-29',
+    dispatchedBy: 'Admin Haji Abdul Rehman',
+    dispatchDate: '2026-08-29',
     remarks: 'Full freight cleared',
     createdAt: new Date('2026-08-29T10:00:00Z').toISOString(),
   },
   {
     id: 'disp_4',
+    irn: '2026082902',
     srNo: 4,
     biltyNo: 'MGT-2026-1004',
-    brokerId: 'broker_main',
+    brokerId: 'broker_main_1',
     brokerName: 'Madina Main Broker (Haji Rasheed & Sons)',
     brokerType: 'MAIN_BROKER' as const,
+    stockSource: 'MAIN_BROKER_STOCK' as const,
     stockItemId: 'stock_5',
-    materialDescription: 'Sona Urea Fertilizer (180 Bags)',
+    stockType: 'Fertilizer & DAP (کھاد سونا یوریا)',
+    materialDescription: 'Sona Urea Fertilizer',
     quantityBags: 180,
+    quantityUnit: 'Bags' as const,
     weightKg: 9000,
     weightMaunds: 225,
+    weightSlipNo: 'KND-9012 / 112234',
     truckNo: 'FD-9923',
     driverName: 'Muhammad Arshad',
     driverCnic: '33202-7654321-5',
@@ -295,25 +362,32 @@ const initialDispatches = [
     rentAmountPkr: 31000,
     rentStatus: 'PENDING' as const,
     advancePaidPkr: 10000,
+    remainingRentPkr: 21000,
     balancePkr: 21000,
     paymentMethod: 'Cash On Bilty Collection',
-    dispatchedBy: 'Munshi Bilal Gujjar',
-    dispatchDate: new Date('2026-08-29T11:45:00Z').toISOString(),
+    paymentDate: '2026-08-29',
+    dispatchedBy: 'Admin Haji Abdul Rehman',
+    dispatchDate: '2026-08-29',
     remarks: '',
     createdAt: new Date('2026-08-29T11:45:00Z').toISOString(),
   },
   {
     id: 'disp_5',
+    irn: '2026082903',
     srNo: 5,
     biltyNo: 'MGT-2026-1005',
-    brokerId: 'broker_co3',
-    brokerName: 'Malik Irfan Grain Traders',
+    brokerId: 'broker_co1',
+    brokerName: 'Tariq Chinioti Brokery',
     brokerType: 'CO_BROKER' as const,
+    stockSource: 'OWN_STOCK' as const,
     stockItemId: 'stock_4',
-    materialDescription: 'Raw Cotton Ginning Bales (60 Bales)',
+    stockType: 'Raw Cotton & Bales (روئی و پھٹی)',
+    materialDescription: 'Raw Cotton Ginning Bales',
     quantityBags: 60,
+    quantityUnit: 'Bales' as const,
     weightKg: 6000,
     weightMaunds: 150,
+    weightSlipNo: 'COT-7712 / 990143',
     truckNo: 'KHI-6012',
     driverName: 'Noor Muhammad Pathan',
     driverCnic: '33201-1122334-9',
@@ -326,58 +400,74 @@ const initialDispatches = [
     rentAmountPkr: 125000,
     rentStatus: 'PAID' as const,
     advancePaidPkr: 125000,
+    remainingRentPkr: 0,
     balancePkr: 0,
     paymentMethod: 'Company Cheque',
-    dispatchedBy: 'Munshi Waqas Ahmed',
-    dispatchDate: new Date('2026-08-29T15:30:00Z').toISOString(),
+    paymentDate: '2026-08-29',
+    dispatchedBy: 'Admin Haji Abdul Rehman',
+    dispatchDate: '2026-08-29',
     remarks: 'Cross-country transit',
     createdAt: new Date('2026-08-29T15:30:00Z').toISOString(),
   },
   {
     id: 'disp_6',
+    irn: '2026083001',
     srNo: 6,
     biltyNo: 'MGT-2026-1006',
-    brokerId: 'broker_co1',
-    brokerName: 'Tariq Chinioti Brokery',
+    brokerId: 'broker_co2',
+    brokerName: 'Bilal Gujjar & Co.',
     brokerType: 'CO_BROKER' as const,
-    stockItemId: 'stock_2',
-    materialDescription: 'Basmati Rice Super Kernel (90 Bags)',
-    quantityBags: 90,
-    weightKg: 4500,
-    weightMaunds: 112.5,
-    truckNo: 'CHT-1134',
-    driverName: 'Bashir Ahmed Sial',
-    driverCnic: '33202-6549871-3',
-    driverPhone: '0306-1122445',
-    shopName: 'Gulshan Super Market',
-    shopkeeperName: 'Malik Jahangir',
-    shopkeeperPhone: '0300-8877665',
-    destinationAddress: 'Main Civil Lines Road',
-    destinationCity: 'Gujranwala',
-    rentAmountPkr: 34000,
+    stockSource: 'OWN_STOCK' as const,
+    stockItemId: null,
+    stockType: 'Edible Oil & Ghee (تیل و گھی)',
+    materialDescription: 'Premium Cooking Banaspati Oil',
+    quantityBags: 80,
+    quantityUnit: 'Drums' as const,
+    weightKg: 1280,
+    weightMaunds: 32,
+    weightSlipNo: 'xdk-2983 / 232444',
+    truckNo: 'LHR-5566',
+    driverName: 'Rashid Mehmood',
+    driverCnic: '33202-6677889-1',
+    driverPhone: null,
+    shopName: 'Al-Madina Oil Traders',
+    shopkeeperName: 'Haji Shakeel',
+    shopkeeperPhone: null,
+    destinationAddress: 'Main City Bazaar',
+    destinationCity: 'Lahore',
+    rentAmountPkr: 26000,
     rentStatus: 'PENDING' as const,
-    advancePaidPkr: 10000,
-    balancePkr: 24000,
-    paymentMethod: 'Bilty Due Payment',
-    dispatchedBy: 'Munshi Muhammad Aslam',
-    dispatchDate: new Date('2026-08-29T17:00:00Z').toISOString(),
-    remarks: '',
-    createdAt: new Date('2026-08-29T17:00:00Z').toISOString(),
+    advancePaidPkr: 16000,
+    remainingRentPkr: 10000,
+    balancePkr: 10000,
+    paymentMethod: 'Cash Slip',
+    paymentDate: '2026-08-30',
+    dispatchedBy: 'Admin Haji Abdul Rehman',
+    dispatchDate: '2026-08-30',
+    remarks: null,
+    createdAt: '2026-08-30T10:47:33.940Z',
   },
 ];
 
-// Persistent File Store Helper
 const DATA_FILE = path.join(process.cwd(), '.data_store.json');
 
 function loadStore() {
   try {
     if (fs.existsSync(DATA_FILE)) {
       const content = fs.readFileSync(DATA_FILE, 'utf-8');
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      if (parsed.brokers && parsed.dispatches) {
+        if (!parsed.companySettings) parsed.companySettings = initialCompanySettings;
+        if (!parsed.stockTypes) parsed.stockTypes = initialStockTypes;
+        if (!parsed.users || parsed.users.length === 0) parsed.users = initialUsers;
+        return parsed;
+      }
     }
   } catch (e) {}
 
   const defaultStore = {
+    companySettings: initialCompanySettings,
+    stockTypes: initialStockTypes,
     users: initialUsers,
     brokers: initialBrokers,
     stockItems: initialStockItems,
@@ -394,25 +484,155 @@ function saveStore(data: any) {
 }
 
 export const db = {
-  // USERS
-  findUser: async (query: { usernameOrEmail?: string; id?: string }) => {
-    try {
-      if (prisma?.user) {
-        if (query.id) return await prisma.user.findUnique({ where: { id: query.id } });
-        if (query.usernameOrEmail) {
-          return await prisma.user.findFirst({
-            where: {
-              OR: [
-                { username: query.usernameOrEmail.toLowerCase() },
-                { email: query.usernameOrEmail.toLowerCase() },
-              ],
-            },
-          });
+  // COMPANY SETTINGS
+  getCompanySettings: async () => {
+    const store = loadStore();
+    return store.companySettings || initialCompanySettings;
+  },
+
+  updateCompanySettings: async (updates: any) => {
+    const store = loadStore();
+    store.companySettings = {
+      ...store.companySettings,
+      ...updates,
+    };
+    saveStore(store);
+    return store.companySettings;
+  },
+
+  // STOCK TYPES
+  getStockTypes: async () => {
+    const store = loadStore();
+    return store.stockTypes || initialStockTypes;
+  },
+
+  addStockType: async (typeData: any) => {
+    const store = loadStore();
+    const newType = {
+      id: `st_${Date.now()}`,
+      name: typeData.name.trim(),
+      nameUrdu: typeData.nameUrdu || typeData.name,
+      code: typeData.code ? typeData.code.trim().toUpperCase() : `ST-${Date.now().toString().slice(-3)}`,
+      category: typeData.category || 'General Cargo',
+      defaultUnit: typeData.defaultUnit || 'Bags',
+      standardWeightKg: Number(typeData.standardWeightKg) || 50,
+      defaultUnitPricePkr: Number(typeData.defaultUnitPricePkr) || 5000,
+      description: typeData.description || '',
+    };
+    if (!store.stockTypes) store.stockTypes = [];
+    store.stockTypes.push(newType);
+    saveStore(store);
+    return newType;
+  },
+
+  updateStockType: async (id: string, updates: any) => {
+    const store = loadStore();
+    const index = store.stockTypes.findIndex((st: any) => st.id === id);
+    if (index !== -1) {
+      store.stockTypes[index] = {
+        ...store.stockTypes[index],
+        ...updates,
+      };
+      saveStore(store);
+      return store.stockTypes[index];
+    }
+    return null;
+  },
+
+  deleteStockType: async (id: string) => {
+    const store = loadStore();
+    const index = store.stockTypes.findIndex((st: any) => st.id === id);
+    if (index !== -1) {
+      const deleted = store.stockTypes.splice(index, 1)[0];
+      saveStore(store);
+      return deleted;
+    }
+    return null;
+  },
+
+  // USER MANAGEMENT
+  getUsers: async () => {
+    const store = loadStore();
+    return store.users || initialUsers;
+  },
+
+  createUser: async (userData: {
+    name: string;
+    username: string;
+    email: string;
+    password?: string;
+    plainPassword?: string;
+    role?: 'ADMIN' | 'EMPLOYEE';
+    phone?: string;
+  }) => {
+    const store = loadStore();
+    const cleanUsername = userData.username.trim().toLowerCase();
+    
+    // Check for existing username or email
+    const exists = store.users.some(
+      (u: any) => u.username?.toLowerCase() === cleanUsername || (userData.email && u.email?.toLowerCase() === userData.email.trim().toLowerCase())
+    );
+    if (exists) {
+      throw new Error(`Username "${cleanUsername}" or Email already exists.`);
+    }
+
+    const newUser = {
+      id: `user_${Date.now()}`,
+      name: userData.name.trim(),
+      username: cleanUsername,
+      email: userData.email?.trim() || `${cleanUsername}@madinagoods.com`,
+      password: userData.password || '$2a$10$wN6pY2HjGjK1u9k5c8z6Qe0vVbQz8W3rT4u2X5vY7z8W3rT4u2X5v',
+      plainPassword: userData.plainPassword || 'MunshiPass@2026',
+      role: userData.role || 'EMPLOYEE',
+      phone: userData.phone?.trim() || '',
+      createdAt: new Date().toISOString(),
+    };
+
+    store.users.push(newUser);
+    saveStore(store);
+    return newUser;
+  },
+
+  updateUser: async (id: string, updates: any) => {
+    const store = loadStore();
+    const index = store.users.findIndex((u: any) => u.id === id);
+    if (index !== -1) {
+      const current = store.users[index];
+      
+      // If updating username, check uniqueness
+      if (updates.username && updates.username.toLowerCase().trim() !== current.username.toLowerCase()) {
+        const check = updates.username.toLowerCase().trim();
+        if (store.users.some((u: any) => u.id !== id && u.username?.toLowerCase() === check)) {
+          throw new Error(`Username "${check}" is already taken.`);
         }
       }
-    } catch (e) {}
 
-    // Fallback store
+      store.users[index] = {
+        ...current,
+        ...updates,
+      };
+      saveStore(store);
+      return store.users[index];
+    }
+    return null;
+  },
+
+  deleteUser: async (id: string) => {
+    const store = loadStore();
+    const index = store.users.findIndex((u: any) => u.id === id);
+    if (index !== -1) {
+      const user = store.users[index];
+      if (user.id === 'user_admin' || user.username === 'admin') {
+        throw new Error('Primary Administrator account cannot be deleted.');
+      }
+      const deleted = store.users.splice(index, 1)[0];
+      saveStore(store);
+      return deleted;
+    }
+    return null;
+  },
+
+  findUser: async (query: { usernameOrEmail?: string; id?: string }) => {
     const store = loadStore();
     if (query.id) {
       return store.users.find((u: any) => u.id === query.id) || null;
@@ -426,24 +646,86 @@ export const db = {
 
   // BROKERS
   getBrokers: async () => {
-    try {
-      if (prisma?.broker) {
-        const brokers = await prisma.broker.findMany();
-        if (brokers.length > 0) return brokers;
-      }
-    } catch (e) {}
     const store = loadStore();
     return store.brokers;
   },
 
+  createBroker: async (brokerData: {
+    name: string;
+    type: 'MAIN_BROKER' | 'CO_BROKER';
+    phone: string;
+    city: string;
+    stockTypes?: string[];
+    ownAvailableBags?: number;
+    ownAvailableWeight?: number;
+    manualStockValuationPkr?: number;
+    isAttachedToMainBroker?: boolean;
+    attachedToMainBrokerId?: string;
+    allocatedQuotaBags?: number;
+    allocatedQuotaWeight?: number;
+    commissionRate?: number;
+  }) => {
+    const store = loadStore();
+    const bags = Number(brokerData.ownAvailableBags) || 0;
+    const isMain = brokerData.type === 'MAIN_BROKER';
+
+    const newBroker = {
+      id: `broker_${isMain ? 'main_' : 'co_'}${Date.now()}`,
+      name: brokerData.name.trim(),
+      type: brokerData.type,
+      phone: brokerData.phone.trim(),
+      city: brokerData.city.trim() || 'Chiniot',
+      stockTypes: Array.isArray(brokerData.stockTypes) && brokerData.stockTypes.length > 0 ? brokerData.stockTypes : ['General Cargo'],
+      ownAvailableBags: bags,
+      ownAvailableWeight: Number(brokerData.ownAvailableWeight) || (bags * 50) / 40,
+      manualStockValuationPkr: brokerData.manualStockValuationPkr !== undefined && brokerData.manualStockValuationPkr !== '' ? Number(brokerData.manualStockValuationPkr) : undefined,
+      isAttachedToMainBroker: isMain ? true : (brokerData.isAttachedToMainBroker !== undefined ? brokerData.isAttachedToMainBroker : true),
+      attachedToMainBrokerId: isMain ? undefined : brokerData.attachedToMainBrokerId,
+      allocatedQuotaBags: isMain ? 0 : (Number(brokerData.allocatedQuotaBags) || 500),
+      allocatedQuotaWeight: isMain ? 0 : (Number(brokerData.allocatedQuotaWeight) || ((Number(brokerData.allocatedQuotaBags) || 500) * 50) / 40),
+      commissionRate: Number(brokerData.commissionRate) || (isMain ? 0 : 2.0),
+      createdAt: new Date().toISOString(),
+    };
+    store.brokers.push(newBroker);
+    saveStore(store);
+    return newBroker;
+  },
+
+  updateBroker: async (id: string, updates: any) => {
+    const store = loadStore();
+    const index = store.brokers.findIndex((b: any) => b.id === id);
+    if (index !== -1) {
+      const current = store.brokers[index];
+      const ownBags = updates.ownAvailableBags !== undefined ? Number(updates.ownAvailableBags) : current.ownAvailableBags;
+      const quotaBags = updates.allocatedQuotaBags !== undefined ? Number(updates.allocatedQuotaBags) : current.allocatedQuotaBags;
+
+      store.brokers[index] = {
+        ...current,
+        ...updates,
+        ownAvailableBags: ownBags,
+        ownAvailableWeight: (ownBags * 50) / 40,
+        allocatedQuotaBags: quotaBags,
+        allocatedQuotaWeight: (quotaBags * 50) / 40,
+      };
+      saveStore(store);
+      return store.brokers[index];
+    }
+    return null;
+  },
+
+  deleteBroker: async (id: string) => {
+    const store = loadStore();
+    const index = store.brokers.findIndex((b: any) => b.id === id);
+    if (index !== -1) {
+      const deleted = store.brokers.splice(index, 1)[0];
+      saveStore(store);
+      return deleted;
+    }
+    return null;
+  },
+
   // STOCK ITEMS
   getStockItems: async () => {
-    try {
-      if (prisma?.stockItem) {
-        const items = await prisma.stockItem.findMany();
-        if (items.length > 0) return items;
-      }
-    } catch (e) {}
     const store = loadStore();
     return store.stockItems;
   },
@@ -460,13 +742,6 @@ export const db = {
     };
     store.stockItems.push(newItem);
     saveStore(store);
-
-    try {
-      if (prisma?.stockItem) {
-        await prisma.stockItem.create({ data: newItem });
-      }
-    } catch (e) {}
-
     return newItem;
   },
 
@@ -480,37 +755,13 @@ export const db = {
       stockItem.availableWeightKg += inwardData.weightKg;
       saveStore(store);
     }
-
-    try {
-      if (prisma?.stockItem) {
-        await prisma.stockItem.update({
-          where: { id: inwardData.stockItemId },
-          data: {
-            totalBagsInward: { increment: inwardData.quantityBags },
-            totalWeightKg: { increment: inwardData.weightKg },
-            availableBags: { increment: inwardData.quantityBags },
-            availableWeightKg: { increment: inwardData.weightKg },
-          },
-        });
-      }
-    } catch (e) {}
-
     return inwardData;
   },
 
-  // DISPATCHES
-  getDispatches: async (filters: { brokerId?: string; rentStatus?: string; search?: string }) => {
-    let list: any[] = [];
-    try {
-      if (prisma?.dispatch) {
-        list = await prisma.dispatch.findMany({ orderBy: { srNo: 'desc' } });
-      }
-    } catch (e) {}
-
-    if (!list || list.length === 0) {
-      const store = loadStore();
-      list = [...store.dispatches].reverse();
-    }
+  // DISPATCHES & IRN (Format: YYYYMMDD01, YYYYMMDD02, YYYYMMDD03...)
+  getDispatches: async (filters: { brokerId?: string; rentStatus?: string; search?: string; irn?: string }) => {
+    const store = loadStore();
+    let list = [...store.dispatches].reverse();
 
     if (filters.brokerId && filters.brokerId !== 'ALL') {
       list = list.filter((d) => d.brokerId === filters.brokerId);
@@ -518,13 +769,20 @@ export const db = {
     if (filters.rentStatus && filters.rentStatus !== 'ALL') {
       list = list.filter((d) => d.rentStatus === filters.rentStatus);
     }
+    if (filters.irn) {
+      const q = filters.irn.toLowerCase().trim().replace(/^irn#?/i, '');
+      list = list.filter((d) => (d.irn || '').toLowerCase().includes(q) || d.srNo?.toString() === q);
+    }
     if (filters.search) {
-      const s = filters.search.toLowerCase();
+      const s = filters.search.toLowerCase().trim();
       list = list.filter(
         (d) =>
-          d.srNo?.toString().includes(s) ||
+          (d.irn || '').toLowerCase().includes(s) ||
+          d.srNo?.toString() === s ||
           d.biltyNo?.toLowerCase().includes(s) ||
+          d.weightSlipNo?.toLowerCase().includes(s) ||
           d.materialDescription?.toLowerCase().includes(s) ||
+          d.stockType?.toLowerCase().includes(s) ||
           d.truckNo?.toLowerCase().includes(s) ||
           d.driverName?.toLowerCase().includes(s) ||
           d.driverCnic?.toLowerCase().includes(s) ||
@@ -540,47 +798,64 @@ export const db = {
 
   createDispatch: async (dispatchData: any) => {
     const store = loadStore();
-    const count = store.dispatches.length;
-    const srNo = count + 1;
-    const biltyNo = `MGT-2026-${String(1000 + srNo)}`;
+    const dispatchDate = dispatchData.dispatchDate || new Date().toISOString().split('T')[0];
+    const cleanDate = dispatchDate.replace(/-/g, '');
+    
+    // Strict sequential IRN based on overall SR Number (never repeats 01, 02, 03, 04, 05...)
+    const srNo = store.dispatches.length + 1;
+    const seq = String(srNo).padStart(2, '0');
+    const irn = `${cleanDate}${seq}`;
+    
+    // Support manual Bilty Number or fallback
+    const biltyNo = dispatchData.biltyNo ? dispatchData.biltyNo.trim() : `MGT-2026-${String(1000 + srNo)}`;
+
+    const parsedRent = Number(dispatchData.rentAmountPkr) || 0;
+    const parsedAdvance = Number(dispatchData.advancePaidPkr) || (dispatchData.rentStatus === 'PAID' ? parsedRent : 0);
+    const remainingRentPkr = Math.max(0, parsedRent - parsedAdvance);
+    const rentStatus = remainingRentPkr === 0 ? 'PAID' : 'PENDING';
+
+    const paymentDate = dispatchData.paymentDate || dispatchDate;
+    const quantityUnit = dispatchData.quantityUnit || 'Bags';
+    const weightSlipNo = dispatchData.weightSlipNo ? dispatchData.weightSlipNo.trim() : `xdk-${Math.floor(1000 + Math.random() * 9000)} / ${Math.floor(100000 + Math.random() * 900000)}`;
 
     const newDispatch = {
       id: `disp_${Date.now()}`,
+      irn,
       srNo,
       biltyNo,
-      dispatchDate: new Date().toISOString(),
+      weightSlipNo,
+      quantityUnit,
+      rentAmountPkr: parsedRent,
+      advancePaidPkr: parsedAdvance,
+      remainingRentPkr,
+      balancePkr: remainingRentPkr,
+      rentStatus,
+      dispatchDate,
+      paymentDate,
       createdAt: new Date().toISOString(),
       ...dispatchData,
     };
 
     store.dispatches.push(newDispatch);
 
-    // Auto deduct stock
-    if (newDispatch.stockItemId) {
-      const stockItem = store.stockItems.find((s: any) => s.id === newDispatch.stockItemId);
-      if (stockItem) {
-        stockItem.availableBags = Math.max(0, stockItem.availableBags - newDispatch.quantityBags);
-        stockItem.availableWeightKg = Math.max(0, stockItem.availableWeightKg - newDispatch.weightKg);
+    // LIVE SIMULTANEOUS STOCK DEDUCTION
+    if (newDispatch.stockSource === 'OWN_STOCK') {
+      const broker = store.brokers.find((b: any) => b.id === newDispatch.brokerId);
+      if (broker) {
+        broker.ownAvailableBags = Math.max(0, (broker.ownAvailableBags || 0) - newDispatch.quantityBags);
+        broker.ownAvailableWeight = (broker.ownAvailableBags * 50) / 40;
+      }
+    } else {
+      if (newDispatch.stockItemId) {
+        const stockItem = store.stockItems.find((s: any) => s.id === newDispatch.stockItemId);
+        if (stockItem) {
+          stockItem.availableBags = Math.max(0, stockItem.availableBags - newDispatch.quantityBags);
+          stockItem.availableWeightKg = Math.max(0, stockItem.availableWeightKg - newDispatch.weightKg);
+        }
       }
     }
 
     saveStore(store);
-
-    try {
-      if (prisma?.dispatch) {
-        await prisma.dispatch.create({ data: newDispatch });
-        if (newDispatch.stockItemId) {
-          await prisma.stockItem.update({
-            where: { id: newDispatch.stockItemId },
-            data: {
-              availableBags: { decrement: newDispatch.quantityBags },
-              availableWeightKg: { decrement: newDispatch.weightKg },
-            },
-          });
-        }
-      }
-    } catch (e) {}
-
     return newDispatch;
   },
 
@@ -588,9 +863,39 @@ export const db = {
     const store = loadStore();
     const index = store.dispatches.findIndex((d: any) => d.id === id);
     if (index !== -1) {
-      store.dispatches[index] = { ...store.dispatches[index], ...updates };
+      const current = store.dispatches[index];
+      const rent = updates.rentAmountPkr !== undefined ? Number(updates.rentAmountPkr) : current.rentAmountPkr;
+      const adv = updates.advancePaidPkr !== undefined ? Number(updates.advancePaidPkr) : current.advancePaidPkr;
+      const remainingRentPkr = Math.max(0, rent - adv);
+      const status = remainingRentPkr === 0 ? 'PAID' : (updates.rentStatus || 'PENDING');
+
+      store.dispatches[index] = {
+        ...current,
+        ...updates,
+        rentAmountPkr: rent,
+        advancePaidPkr: adv,
+        remainingRentPkr,
+        balancePkr: remainingRentPkr,
+        rentStatus: status,
+      };
       saveStore(store);
       return store.dispatches[index];
+    }
+    return null;
+  },
+
+  updatePayment: async (id: string, advancePaidPkr: number, paymentMethod?: string, paymentDate?: string) => {
+    const store = loadStore();
+    const item = store.dispatches.find((d: any) => d.id === id);
+    if (item) {
+      item.advancePaidPkr = advancePaidPkr;
+      item.remainingRentPkr = Math.max(0, item.rentAmountPkr - advancePaidPkr);
+      item.balancePkr = item.remainingRentPkr;
+      item.rentStatus = item.remainingRentPkr === 0 ? 'PAID' : 'PENDING';
+      if (paymentMethod) item.paymentMethod = paymentMethod;
+      if (paymentDate) item.paymentDate = paymentDate;
+      saveStore(store);
+      return item;
     }
     return null;
   },
@@ -599,9 +904,12 @@ export const db = {
     const store = loadStore();
     const item = store.dispatches.find((d: any) => d.id === id);
     if (item) {
-      item.rentStatus = item.rentStatus === 'PAID' ? 'PENDING' : 'PAID';
-      item.advancePaidPkr = item.rentStatus === 'PAID' ? item.rentAmountPkr : 0;
-      item.balancePkr = item.rentStatus === 'PAID' ? 0 : item.rentAmountPkr;
+      const nextStatus = item.rentStatus === 'PAID' ? 'PENDING' : 'PAID';
+      item.rentStatus = nextStatus;
+      item.advancePaidPkr = nextStatus === 'PAID' ? item.rentAmountPkr : 0;
+      item.remainingRentPkr = nextStatus === 'PAID' ? 0 : item.rentAmountPkr;
+      item.balancePkr = item.remainingRentPkr;
+      item.paymentDate = new Date().toISOString().split('T')[0];
       saveStore(store);
       return item;
     }
@@ -613,8 +921,13 @@ export const db = {
     const index = store.dispatches.findIndex((d: any) => d.id === id);
     if (index !== -1) {
       const deleted = store.dispatches.splice(index, 1)[0];
-      // Restore stock
-      if (deleted.stockItemId) {
+      if (deleted.stockSource === 'OWN_STOCK') {
+        const broker = store.brokers.find((b: any) => b.id === deleted.brokerId);
+        if (broker) {
+          broker.ownAvailableBags = (broker.ownAvailableBags || 0) + deleted.quantityBags;
+          broker.ownAvailableWeight = (broker.ownAvailableBags * 50) / 40;
+        }
+      } else if (deleted.stockItemId) {
         const stock = store.stockItems.find((s: any) => s.id === deleted.stockItemId);
         if (stock) {
           stock.availableBags += deleted.quantityBags;

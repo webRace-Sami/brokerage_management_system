@@ -7,10 +7,13 @@ import SummaryCards from '@/components/SummaryCards';
 import GrandTotalsBar from '@/components/GrandTotalsBar';
 import DispatchTable from '@/components/DispatchTable';
 import NewDispatchModal from '@/components/NewDispatchModal';
-import StockInwardModal from '@/components/StockInwardModal';
-import StockRegistryModal from '@/components/StockRegistryModal';
+import BrokerManagementModal from '@/components/BrokerManagementModal';
+import UserManagementModal from '@/components/UserManagementModal';
+import StockTypesManagementModal from '@/components/StockTypesManagementModal';
+import CompanySettingsModal from '@/components/CompanySettingsModal';
 import BiltyPrintModal from '@/components/BiltyPrintModal';
 import EditDispatchModal from '@/components/EditDispatchModal';
+import UpdatePaymentModal from '@/components/UpdatePaymentModal';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal';
 import Footer from '@/components/Footer';
 import {
@@ -19,6 +22,8 @@ import {
   DispatchData,
   BrokerData,
   StockItemData,
+  StockTypeData,
+  CompanySettings,
 } from '@/lib/types';
 
 export default function DashboardPage() {
@@ -30,22 +35,28 @@ export default function DashboardPage() {
 
   // Data States
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const [company, setCompany] = useState<CompanySettings | null>(null);
   const [dispatches, setDispatches] = useState<DispatchData[]>([]);
   const [brokers, setBrokers] = useState<BrokerData[]>([]);
   const [stockItems, setStockItems] = useState<StockItemData[]>([]);
+  const [stockTypes, setStockTypes] = useState<StockTypeData[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
 
   // Filters
   const [activeBrokerTab, setActiveBrokerTab] = useState('ALL');
   const [selectedRentFilter, setSelectedRentFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [irnFilter, setIrnFilter] = useState('');
 
   // Modal States
   const [isNewDispatchOpen, setIsNewDispatchOpen] = useState(false);
-  const [isStockInwardOpen, setIsStockInwardOpen] = useState(false);
-  const [isStockRegistryOpen, setIsStockRegistryOpen] = useState(false);
+  const [isBrokerSettingsOpen, setIsBrokerSettingsOpen] = useState(false);
+  const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+  const [isStockTypesOpen, setIsStockTypesOpen] = useState(false);
+  const [isCompanySettingsOpen, setIsCompanySettingsOpen] = useState(false);
   const [selectedBiltyDispatch, setSelectedBiltyDispatch] = useState<DispatchData | null>(null);
   const [selectedEditDispatch, setSelectedEditDispatch] = useState<DispatchData | null>(null);
+  const [selectedPaymentDispatch, setSelectedPaymentDispatch] = useState<DispatchData | null>(null);
   const [selectedDeleteDispatch, setSelectedDeleteDispatch] = useState<DispatchData | null>(null);
 
   // Check Authentication
@@ -57,7 +68,6 @@ export default function DashboardPage() {
           const data = await res.json();
           setCurrentUser(data.user);
         } else {
-          // Check local storage fallback or redirect
           const stored = localStorage.getItem('madina_user');
           if (stored) {
             setCurrentUser(JSON.parse(stored));
@@ -66,7 +76,12 @@ export default function DashboardPage() {
           }
         }
       } catch (err) {
-        console.error('Auth check error:', err);
+        const stored = localStorage.getItem('madina_user');
+        if (stored) {
+          setCurrentUser(JSON.parse(stored));
+        } else {
+          router.push('/login');
+        }
       } finally {
         setAuthLoading(false);
       }
@@ -74,42 +89,38 @@ export default function DashboardPage() {
     checkAuth();
   }, [router]);
 
-  // Fetch Dashboard Summary, Brokers & Stock
-  const fetchSummaryAndBrokers = useCallback(async () => {
+  // Fetch Dashboard Summary & Stock Types
+  const fetchSummary = useCallback(async () => {
     try {
-      const [sumRes, brokRes, stockRes] = await Promise.all([
-        fetch('/api/dashboard/summary'),
-        fetch('/api/brokers'),
-        fetch('/api/stock-items'),
-      ]);
-
-      if (sumRes.ok) {
-        const sumData = await sumRes.json();
-        setSummary(sumData);
-      }
-
-      if (brokRes.ok) {
-        const brokData = await brokRes.json();
-        setBrokers(brokData.brokers);
-      }
-
-      if (stockRes.ok) {
-        const stockData = await stockRes.json();
-        setStockItems(stockData.stockItems);
+      const res = await fetch('/api/dashboard/summary');
+      if (res.ok) {
+        const data: DashboardSummary = await res.json();
+        setSummary(data);
+        if (data.company) setCompany(data.company);
+        if (data.stockTypes) setStockTypes(data.stockTypes);
       }
     } catch (err) {
-      console.error('Fetch summary error:', err);
+      console.error('Failed to fetch summary', err);
     }
   }, []);
 
-  // Fetch Dispatches List with active filters
+  // Fetch Dispatches with Filters
   const fetchDispatches = useCallback(async () => {
+    setDataLoading(true);
     try {
-      setDataLoading(true);
       const params = new URLSearchParams();
-      if (activeBrokerTab !== 'ALL') params.append('brokerId', activeBrokerTab);
-      if (selectedRentFilter !== 'ALL') params.append('rentStatus', selectedRentFilter);
-      if (searchQuery.trim()) params.append('search', searchQuery.trim());
+      if (activeBrokerTab && activeBrokerTab !== 'ALL') {
+        params.append('brokerId', activeBrokerTab);
+      }
+      if (selectedRentFilter && selectedRentFilter !== 'ALL') {
+        params.append('rentStatus', selectedRentFilter);
+      }
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery.trim());
+      }
+      if (irnFilter.trim()) {
+        params.append('irn', irnFilter.trim());
+      }
 
       const res = await fetch(`/api/dispatches?${params.toString()}`);
       if (res.ok) {
@@ -117,97 +128,205 @@ export default function DashboardPage() {
         setDispatches(data.dispatches || []);
       }
     } catch (err) {
-      console.error('Fetch dispatches error:', err);
+      console.error('Failed to fetch dispatches', err);
     } finally {
       setDataLoading(false);
     }
-  }, [activeBrokerTab, selectedRentFilter, searchQuery]);
+  }, [activeBrokerTab, selectedRentFilter, searchQuery, irnFilter]);
 
-  // Initial and reactive data fetching
-  useEffect(() => {
-    fetchSummaryAndBrokers();
-  }, [fetchSummaryAndBrokers]);
-
-  useEffect(() => {
-    fetchDispatches();
-  }, [fetchDispatches]);
-
-  // Quick Rent Status Toggle
-  const handleToggleRentStatus = async (id: string) => {
+  // Fetch Brokers
+  const fetchBrokers = useCallback(async () => {
     try {
-      const res = await fetch(`/api/dispatches/${id}/toggle-rent`, {
-        method: 'PATCH',
-      });
+      const res = await fetch('/api/brokers');
       if (res.ok) {
-        // Refresh dispatches and summary instantly
-        fetchDispatches();
-        fetchSummaryAndBrokers();
+        const data = await res.json();
+        setBrokers(data.brokers || []);
       }
     } catch (err) {
-      console.error('Toggle rent error:', err);
+      console.error('Failed to fetch brokers', err);
+    }
+  }, []);
+
+  // Fetch Stock Items
+  const fetchStockItems = useCallback(async () => {
+    try {
+      const res = await fetch('/api/stock-items');
+      if (res.ok) {
+        const data = await res.json();
+        setStockItems(data.stockItems || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch stock items', err);
+    }
+  }, []);
+
+  // Initial Data Load
+  useEffect(() => {
+    if (!authLoading) {
+      fetchSummary();
+      fetchBrokers();
+      fetchStockItems();
+    }
+  }, [authLoading, fetchSummary, fetchBrokers, fetchStockItems]);
+
+  // Refetch dispatches on filter change
+  useEffect(() => {
+    if (!authLoading) {
+      fetchDispatches();
+    }
+  }, [authLoading, fetchDispatches]);
+
+  // Refresh All Data
+  const handleRefreshAll = async () => {
+    await Promise.all([fetchSummary(), fetchDispatches(), fetchBrokers(), fetchStockItems()]);
+  };
+
+  // Toggle Rent Status
+  const handleToggleRentStatus = async (id: string) => {
+    try {
+      const res = await fetch(`/api/dispatches/${id}/toggle-rent`, { method: 'POST' });
+      if (res.ok) {
+        handleRefreshAll();
+      }
+    } catch (err) {
+      console.error('Toggle rent status error', err);
     }
   };
 
-  // Export to Excel
+  // Export to Excel CSV
   const handleExportExcel = () => {
-    const params = new URLSearchParams();
-    if (activeBrokerTab !== 'ALL') params.append('brokerId', activeBrokerTab);
-    if (selectedRentFilter !== 'ALL') params.append('rentStatus', selectedRentFilter);
-    if (searchQuery.trim()) params.append('search', searchQuery.trim());
+    if (dispatches.length === 0) {
+      alert('No dispatch records to export.');
+      return;
+    }
 
-    window.open(`/api/export-excel?${params.toString()}`, '_blank');
-  };
+    const headers = [
+      'IRN',
+      'Bilty No',
+      'Weight Slip No',
+      'Dispatch Date',
+      'Broker Name',
+      'Broker Type',
+      'Stock Source',
+      'Commodity / Type',
+      'Goods Description',
+      'Quantity',
+      'Unit',
+      'Weight (kg)',
+      'Weight (Maunds)',
+      'Truck No',
+      'Driver Name',
+      'Driver CNIC',
+      'Shop Name',
+      'Shopkeeper',
+      'Destination City',
+      'Total Rent (PKR)',
+      'Advance Paid (PKR)',
+      'Remaining Rent (PKR)',
+      'Rent Status',
+      'Payment Method',
+      'Payment Date',
+      'Dispatched By',
+    ];
 
-  const handleRefreshAll = () => {
-    fetchSummaryAndBrokers();
-    fetchDispatches();
+    const rows = dispatches.map((d) => [
+      d.irn || `${(d.dispatchDate || '').replace(/-/g, '')}${String(d.srNo).padStart(2, '0')}`,
+      d.biltyNo,
+      d.weightSlipNo || '',
+      d.dispatchDate,
+      d.brokerName,
+      d.brokerType,
+      d.stockSource,
+      d.stockType || '',
+      `"${(d.materialDescription || '').replace(/"/g, '""')}"`,
+      d.quantityBags,
+      d.quantityUnit || 'Bags',
+      d.weightKg,
+      d.weightMaunds,
+      d.truckNo,
+      `"${(d.driverName || '').replace(/"/g, '""')}"`,
+      `'${d.driverCnic}`,
+      `"${(d.shopName || '').replace(/"/g, '""')}"`,
+      `"${(d.shopkeeperName || '').replace(/"/g, '""')}"`,
+      d.destinationCity,
+      d.rentAmountPkr,
+      d.advancePaidPkr,
+      d.remainingRentPkr !== undefined ? d.remainingRentPkr : Math.max(0, d.rentAmountPkr - d.advancePaidPkr),
+      d.rentStatus,
+      `"${(d.paymentMethod || '').replace(/"/g, '""')}"`,
+      d.paymentDate || '',
+      `"${(d.dispatchedBy || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,\uFEFF' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute(
+      'download',
+      `Madina_Goods_Transport_Dispatches_${new Date().toISOString().split('T')[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (authLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <div className="text-sm font-semibold tracking-wide text-slate-300">
-            Connecting to Madina Munshi Portal...
-          </div>
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="font-semibold font-['Outfit'] text-emerald-400 text-lg">
+            Loading Madina Goods Portal...
+          </p>
         </div>
       </div>
     );
   }
 
+  const isAdmin = currentUser?.role === 'ADMIN';
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
       {/* Top Navigation */}
-      <Navbar user={currentUser} />
+      <Navbar user={currentUser} company={company} />
 
       {/* Main Dashboard Workspace */}
       <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
-        {/* Section 1: Main Broker & Co-Broker Summary Cards (Live Shared Inventory) */}
+        {/* Section 1: Main-Brokers & Co-Brokers Grid Boxes with Stock Types & Valuations */}
         <SummaryCards
           summary={summary}
           activeBrokerTab={activeBrokerTab}
           onSelectBrokerTab={(id) => setActiveBrokerTab(id)}
+          onOpenBrokerSettings={() => setIsBrokerSettingsOpen(true)}
+          onOpenUserManagement={() => setIsUserManagementOpen(true)}
+          onOpenStockTypes={() => setIsStockTypesOpen(true)}
+          onOpenCompanySettings={() => setIsCompanySettingsOpen(true)}
+          isAdmin={isAdmin}
         />
 
         {/* Section 2: Fixed Cumulative Metrics Bar */}
         <GrandTotalsBar summary={summary} />
 
-        {/* Section 3: Central Central Dispatch & Stock Data Table */}
+        {/* Section 3: Central Dispatch & Stock Data Table with IRN, Weight Slips & Packaging Units */}
         <DispatchTable
           dispatches={dispatches}
           loading={dataLoading}
           currentUser={currentUser}
           searchQuery={searchQuery}
           onSearchChange={(q) => setSearchQuery(q)}
+          irnFilter={irnFilter}
+          onIrnFilterChange={(irn) => setIrnFilter(irn)}
           selectedRentFilter={selectedRentFilter}
           onRentFilterChange={(status) => setSelectedRentFilter(status)}
           onToggleRentStatus={handleToggleRentStatus}
           onOpenNewDispatch={() => setIsNewDispatchOpen(true)}
-          onOpenStockInward={() => setIsStockInwardOpen(true)}
-          onOpenStockRegistry={() => setIsStockRegistryOpen(true)}
           onPrintBilty={(dispatch) => setSelectedBiltyDispatch(dispatch)}
           onEditDispatch={(dispatch) => setSelectedEditDispatch(dispatch)}
+          onUpdatePayment={(dispatch) => setSelectedPaymentDispatch(dispatch)}
           onDeleteDispatch={(dispatch) => setSelectedDeleteDispatch(dispatch)}
           onExportExcel={handleExportExcel}
           onRefresh={handleRefreshAll}
@@ -221,20 +340,37 @@ export default function DashboardPage() {
         onSuccess={handleRefreshAll}
         brokers={brokers}
         stockItems={stockItems}
+        stockTypes={stockTypes}
       />
 
-      <StockInwardModal
-        isOpen={isStockInwardOpen}
-        onClose={() => setIsStockInwardOpen(false)}
+      <BrokerManagementModal
+        isOpen={isBrokerSettingsOpen}
+        onClose={() => setIsBrokerSettingsOpen(false)}
         onSuccess={handleRefreshAll}
-        stockItems={stockItems}
+        brokers={brokers}
+        stockTypes={stockTypes}
+        currentUser={currentUser}
       />
 
-      <StockRegistryModal
-        isOpen={isStockRegistryOpen}
-        onClose={() => setIsStockRegistryOpen(false)}
+      <UserManagementModal
+        isOpen={isUserManagementOpen}
+        onClose={() => setIsUserManagementOpen(false)}
         onSuccess={handleRefreshAll}
-        stockItems={stockItems}
+      />
+
+      <StockTypesManagementModal
+        isOpen={isStockTypesOpen}
+        onClose={() => setIsStockTypesOpen(false)}
+        onSuccess={handleRefreshAll}
+        stockTypes={stockTypes}
+        currentUser={currentUser}
+      />
+
+      <CompanySettingsModal
+        isOpen={isCompanySettingsOpen}
+        onClose={() => setIsCompanySettingsOpen(false)}
+        onSuccess={handleRefreshAll}
+        company={company}
         currentUser={currentUser}
       />
 
@@ -242,6 +378,7 @@ export default function DashboardPage() {
         isOpen={!!selectedBiltyDispatch}
         onClose={() => setSelectedBiltyDispatch(null)}
         dispatch={selectedBiltyDispatch}
+        company={company}
       />
 
       <EditDispatchModal
@@ -249,6 +386,13 @@ export default function DashboardPage() {
         onClose={() => setSelectedEditDispatch(null)}
         onSuccess={handleRefreshAll}
         dispatch={selectedEditDispatch}
+      />
+
+      <UpdatePaymentModal
+        isOpen={!!selectedPaymentDispatch}
+        onClose={() => setSelectedPaymentDispatch(null)}
+        onSuccess={handleRefreshAll}
+        dispatch={selectedPaymentDispatch}
       />
 
       <DeleteConfirmModal
@@ -259,7 +403,7 @@ export default function DashboardPage() {
       />
 
       {/* Footer */}
-      <Footer />
+      <Footer company={company} />
     </div>
   );
 }

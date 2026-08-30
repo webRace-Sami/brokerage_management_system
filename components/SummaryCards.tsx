@@ -1,19 +1,29 @@
 'use client';
 
 import React from 'react';
-import { Package, Scale, Coins, Building2, User, TrendingUp, CheckCircle, Percent } from 'lucide-react';
+import { Package, Scale, Coins, Building2, User, Users, CheckCircle, Link2, Unlink, Layers, Settings } from 'lucide-react';
 import { DashboardSummary } from '@/lib/types';
 
 interface SummaryCardsProps {
   summary: DashboardSummary | null;
   activeBrokerTab: string;
   onSelectBrokerTab: (brokerId: string) => void;
+  onOpenBrokerSettings?: () => void;
+  onOpenUserManagement?: () => void;
+  onOpenStockTypes?: () => void;
+  onOpenCompanySettings?: () => void;
+  isAdmin?: boolean;
 }
 
 export default function SummaryCards({
   summary,
   activeBrokerTab,
   onSelectBrokerTab,
+  onOpenBrokerSettings,
+  onOpenUserManagement,
+  onOpenStockTypes,
+  onOpenCompanySettings,
+  isAdmin,
 }: SummaryCardsProps) {
   if (!summary) {
     return (
@@ -25,172 +35,266 @@ export default function SummaryCards({
     );
   }
 
-  const { mainBroker, coBrokers } = summary;
+  const { mainBrokers, coBrokers, grandTotals, company } = summary;
 
   return (
     <div className="space-y-4">
-      {/* 1. Main-Broker Primary Live Inventory Card */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 text-white rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-700/60 relative overflow-hidden">
-        {/* Subtle Background Glow */}
-        <div className="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          {/* Main Broker Identity */}
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <Building2 className="w-3.5 h-3.5" />
-                Primary Owner & Main-Broker
-              </span>
-              <span className="text-xs text-slate-400 font-mono">Live Inventory Shared Engine</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white font-['Outfit']">
-              {mainBroker.name}
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300">
-              Central Master Warehouse Stock (Chiniot Godowns). Automatically synchronized with Co-Brokers.
-            </p>
+      {/* Top Header Controls Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-black uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+              Live Stock & Broker Portal
+            </span>
+            <span className="text-xs text-slate-400 font-mono">
+              {company?.name || 'Madina Goods Transport'}
+            </span>
           </div>
-
-          {/* Key Metrics Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 lg:gap-6 shrink-0">
-            {/* Available Bags */}
-            <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3.5 px-4">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
-                <span>Available Stock</span>
-                <Package className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-white font-mono">
-                {mainBroker.availableBags.toLocaleString()}{' '}
-                <span className="text-xs font-sans font-medium text-emerald-400">Bags / Pcs</span>
-              </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
-                Remain: <strong className="text-slate-200">{mainBroker.remainBags.toLocaleString()}</strong>
-              </div>
-            </div>
-
-            {/* Total Weight */}
-            <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3.5 px-4">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
-                <span>Total Live Weight</span>
-                <Scale className="w-4 h-4 text-sky-400" />
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-white font-mono">
-                {Math.round(mainBroker.totalWeightMaunds).toLocaleString()}{' '}
-                <span className="text-xs font-sans font-medium text-sky-400">Maunds (من)</span>
-              </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
-                ≈ {(mainBroker.totalWeightKg / 1000).toFixed(1)} Metric Tons
-              </div>
-            </div>
-
-            {/* Total Valuation in PKR */}
-            <div className="bg-slate-800/90 border border-slate-700/80 rounded-xl p-3.5 px-4 col-span-2 sm:col-span-1">
-              <div className="flex items-center justify-between text-slate-400 text-xs font-medium mb-1">
-                <span>Total Stock Valuation</span>
-                <Coins className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono">
-                PKR {Math.round(mainBroker.totalValuationPkr).toLocaleString()}
-              </div>
-              <div className="text-[11px] text-emerald-400 font-medium mt-0.5 flex items-center gap-1">
-                <CheckCircle className="w-3 h-3" /> Live Real-Time Value
-              </div>
-            </div>
-          </div>
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 font-['Outfit'] mt-1">
+            Registered Brokers & Stock Valuations (تمام بروکرز و اسٹاک معلومات)
+          </h2>
         </div>
+
+        {isAdmin && (
+          <div className="flex flex-wrap items-center gap-2">
+            {onOpenBrokerSettings && (
+              <button
+                onClick={onOpenBrokerSettings}
+                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span>+ Manage Brokers</span>
+              </button>
+            )}
+
+            {onOpenUserManagement && (
+              <button
+                onClick={onOpenUserManagement}
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition-all active:scale-95"
+              >
+                <Users className="w-3.5 h-3.5" />
+                <span>+ Manage Users</span>
+              </button>
+            )}
+
+            {onOpenStockTypes && (
+              <button
+                onClick={onOpenStockTypes}
+                className="flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-300 text-xs font-bold px-3 py-2 rounded-xl shadow-xs transition-all"
+              >
+                <Layers className="w-3.5 h-3.5 text-purple-600" />
+                <span>Stock Types</span>
+              </button>
+            )}
+
+            {onOpenCompanySettings && (
+              <button
+                onClick={onOpenCompanySettings}
+                className="flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-bold px-3 py-2 rounded-xl shadow-xs transition-all"
+              >
+                <Settings className="w-3.5 h-3.5 text-slate-600" />
+                <span>Company Info</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* 2. Co-Broker Badges / Interactive Filter Tabs */}
-      <div>
-        <div className="flex items-center justify-between mb-2 px-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5 text-slate-600" />
-            Associated Co-Brokers & Quota Trackers
-          </span>
-          <span className="text-xs text-slate-400">Click a broker badge to filter table data</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* "All Brokers" Tab */}
-          <button
-            onClick={() => onSelectBrokerTab('ALL')}
-            className={`p-3.5 rounded-xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
-              activeBrokerTab === 'ALL'
-                ? 'bg-emerald-50 border-emerald-500 shadow-md ring-2 ring-emerald-500/20'
-                : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-xs font-bold text-slate-800">ALL BROKERS</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full">
-                Combined
+      {/* Grid of ALL Broker Boxes: Combined Tab, Main-Brokers & Co-Brokers */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+        {/* 1. All Combined Filter Tab */}
+        <button
+          onClick={() => onSelectBrokerTab('ALL')}
+          className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
+            activeBrokerTab === 'ALL'
+              ? 'bg-slate-900 text-white border-slate-900 shadow-lg ring-2 ring-emerald-500/50'
+              : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs text-slate-900'
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className={`text-xs font-extrabold uppercase ${activeBrokerTab === 'ALL' ? 'text-emerald-400' : 'text-slate-600'}`}>
+                ALL BROKERS COMBINED
+              </span>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${activeBrokerTab === 'ALL' ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
+                Full Stand
               </span>
             </div>
-            <div className="text-lg font-black text-slate-900 font-mono">
-              {summary.grandTotals.totalDispatches} Dispatches
+            <div className="text-2xl font-black font-mono">
+              {grandTotals.totalDispatches} <span className="text-xs font-sans font-normal opacity-80">Dispatches</span>
             </div>
-            <div className="text-xs text-slate-500 mt-1">
-              Total Dispatched: <strong>{summary.grandTotals.totalBags.toLocaleString()} Bags</strong>
+            <div className="text-xs opacity-80 mt-1">
+              Dispatched: <strong>{grandTotals.totalBags.toLocaleString()} Bags / Nugs</strong>
             </div>
-          </button>
+          </div>
 
-          {/* Individual Co-Brokers */}
-          {coBrokers.map((cb) => {
-            const isSelected = activeBrokerTab === cb.id;
-            return (
-              <button
-                key={cb.id}
-                onClick={() => onSelectBrokerTab(cb.id)}
-                className={`p-3.5 rounded-xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
-                  isSelected
-                    ? 'bg-indigo-50 border-indigo-500 shadow-md ring-2 ring-indigo-500/20'
-                    : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-1 mb-1">
-                  <div className="font-bold text-sm text-slate-900 truncate" title={cb.name}>
-                    {cb.name}
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full shrink-0">
-                    Co-Broker
+          <div className="mt-4 pt-2.5 border-t border-slate-200/20 flex justify-between text-xs">
+            <span className="opacity-70">Total Rent Value:</span>
+            <strong className="font-mono text-emerald-400">PKR {grandTotals.totalRentPkr.toLocaleString()}</strong>
+          </div>
+        </button>
+
+        {/* 2. Main-Broker Boxes */}
+        {(mainBrokers || []).map((mb) => {
+          const isSelected = activeBrokerTab === mb.id;
+          return (
+            <button
+              key={mb.id}
+              onClick={() => onSelectBrokerTab(mb.id)}
+              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
+                isSelected
+                  ? 'bg-emerald-950 text-white border-emerald-600 shadow-lg ring-2 ring-emerald-500/50'
+                  : 'bg-gradient-to-br from-emerald-50/60 to-white border-emerald-200 hover:border-emerald-300 hover:shadow-md'
+              }`}
+            >
+              <div>
+                <div className="flex items-start justify-between gap-1 mb-1.5">
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-600 text-white uppercase flex items-center gap-1 shadow-xs">
+                    👑 Main-Broker
+                  </span>
+                  <span className={`text-[10px] font-mono ${isSelected ? 'text-emerald-300' : 'text-slate-500'}`}>
+                    {mb.city}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 my-2 text-xs">
-                  <div className="bg-slate-50 rounded-lg p-2 border border-slate-100">
-                    <span className="text-slate-400 block text-[10px] font-semibold">Stock Sold</span>
-                    <span className="font-bold text-slate-800 font-mono">
-                      {cb.soldBags} <span className="font-normal text-[10px]">Bags</span>
-                    </span>
-                  </div>
-                  <div className="bg-slate-50 rounded-lg p-2 border border-slate-100">
-                    <span className="text-slate-400 block text-[10px] font-semibold">Remain Quota</span>
-                    <span className="font-bold text-emerald-700 font-mono">
-                      {cb.remainQuotaBags} <span className="font-normal text-[10px]">Bags</span>
-                    </span>
-                  </div>
+                <div className={`font-black text-sm sm:text-base leading-tight mb-2 truncate ${isSelected ? 'text-white' : 'text-slate-900'}`} title={mb.name}>
+                  {mb.name}
                 </div>
 
-                {/* Quota Progress Bar */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[10px] text-slate-500 font-medium">
-                    <span>Quota: {cb.allocatedQuotaBags} Bags</span>
-                    <span className="font-mono font-bold text-indigo-600">{cb.quotaPercentage}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-500 ${
-                        cb.quotaPercentage > 80 ? 'bg-amber-500' : 'bg-indigo-600'
+                {/* Stock Types List */}
+                <div className="flex flex-wrap gap-1 mb-2.5">
+                  {(mb.stockTypes || ['Wheat', 'Rice']).map((st, i) => (
+                    <span
+                      key={i}
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        isSelected
+                          ? 'bg-emerald-800/80 text-emerald-200 border border-emerald-700'
+                          : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
                       }`}
-                      style={{ width: `${Math.min(100, cb.quotaPercentage)}%` }}
-                    ></div>
+                    >
+                      {st}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Available Bags & Weight */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className={`p-2 rounded-xl border ${isSelected ? 'bg-emerald-900/60 border-emerald-800' : 'bg-white border-emerald-100'}`}>
+                    <span className={`block text-[10px] font-bold ${isSelected ? 'text-emerald-300' : 'text-slate-500'}`}>
+                      Available Stock
+                    </span>
+                    <span className={`font-black font-mono text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                      {mb.availableBags.toLocaleString()} <span className="text-[10px] font-normal">Bags</span>
+                    </span>
+                  </div>
+
+                  <div className={`p-2 rounded-xl border ${isSelected ? 'bg-emerald-900/60 border-emerald-800' : 'bg-white border-emerald-100'}`}>
+                    <span className={`block text-[10px] font-bold ${isSelected ? 'text-emerald-300' : 'text-slate-500'}`}>
+                      Total Weight
+                    </span>
+                    <span className={`font-black font-mono text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                      {Math.round(mb.totalWeightMaunds).toLocaleString()} <span className="text-[10px] font-normal">Maunds</span>
+                    </span>
                   </div>
                 </div>
-              </button>
-            );
-          })}
-        </div>
+              </div>
+
+              {/* Valuation in PKR */}
+              <div className={`mt-3 pt-2.5 border-t flex items-center justify-between text-xs ${isSelected ? 'border-emerald-800 text-emerald-300' : 'border-emerald-100 text-slate-600'}`}>
+                <span className="flex items-center gap-1 font-bold text-[11px]">
+                  <Coins className="w-3.5 h-3.5 text-amber-500" /> Valuation:
+                </span>
+                <strong className={`font-mono ${isSelected ? 'text-amber-300' : 'text-amber-700'}`}>
+                  PKR {Math.round(mb.totalValuationPkr).toLocaleString()}
+                </strong>
+              </div>
+            </button>
+          );
+        })}
+
+        {/* 3. Co-Broker Boxes */}
+        {coBrokers.map((cb) => {
+          const isSelected = activeBrokerTab === cb.id;
+          return (
+            <button
+              key={cb.id}
+              onClick={() => onSelectBrokerTab(cb.id)}
+              className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col justify-between ${
+                isSelected
+                  ? 'bg-indigo-950 text-white border-indigo-500 shadow-lg ring-2 ring-indigo-500/50'
+                  : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-xs'
+              }`}
+            >
+              <div>
+                <div className="flex items-start justify-between gap-1 mb-1.5">
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 uppercase">
+                    🤝 Co-Broker
+                  </span>
+                  {cb.isAttachedToMainBroker ? (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full flex items-center gap-0.5">
+                      <Link2 className="w-2.5 h-2.5" /> Attached
+                    </span>
+                  ) : (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded-full flex items-center gap-0.5">
+                      <Unlink className="w-2.5 h-2.5" /> Own Only
+                    </span>
+                  )}
+                </div>
+
+                <div className={`font-black text-sm sm:text-base leading-tight mb-2 truncate ${isSelected ? 'text-white' : 'text-slate-900'}`} title={cb.name}>
+                  {cb.name}
+                </div>
+
+                {/* Stock Types List */}
+                <div className="flex flex-wrap gap-1 mb-2.5">
+                  {(cb.stockTypes || ['General']).map((st, i) => (
+                    <span
+                      key={i}
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        isSelected
+                          ? 'bg-indigo-900 text-indigo-200 border border-indigo-800'
+                          : 'bg-slate-100 text-slate-700 border border-slate-200'
+                      }`}
+                    >
+                      {st}
+                    </span>
+                  ))}
+                </div>
+
+                {/* Dual Stock Counters: Own Stock vs Main Sold */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className={`p-2 rounded-xl border ${isSelected ? 'bg-indigo-900/60 border-indigo-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <span className={`block text-[10px] font-bold ${isSelected ? 'text-indigo-300' : 'text-slate-500'}`}>
+                      Own Stock
+                    </span>
+                    <span className={`font-black font-mono text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                      {(cb.ownAvailableBags || 0).toLocaleString()} <span className="text-[10px] font-normal">Bags</span>
+                    </span>
+                  </div>
+
+                  <div className={`p-2 rounded-xl border ${isSelected ? 'bg-indigo-900/60 border-indigo-800' : 'bg-slate-50 border-slate-200'}`}>
+                    <span className={`block text-[10px] font-bold ${isSelected ? 'text-indigo-300' : 'text-slate-500'}`}>
+                      Main Stock Sold
+                    </span>
+                    <span className={`font-black font-mono text-sm ${isSelected ? 'text-indigo-300' : 'text-indigo-700'}`}>
+                      {cb.soldBags} <span className="text-[10px] font-normal">Bags</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Valuation in PKR */}
+              <div className={`mt-3 pt-2.5 border-t flex items-center justify-between text-xs ${isSelected ? 'border-indigo-800 text-indigo-300' : 'border-slate-100 text-slate-600'}`}>
+                <span className="flex items-center gap-1 font-bold text-[11px]">
+                  <Coins className="w-3.5 h-3.5 text-amber-500" /> Valuation:
+                </span>
+                <strong className={`font-mono ${isSelected ? 'text-amber-300' : 'text-amber-700'}`}>
+                  PKR {Math.round(cb.totalValuationPkr).toLocaleString()}
+                </strong>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

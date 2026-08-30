@@ -5,6 +5,30 @@ export interface UserProfile {
   email: string;
   role: 'ADMIN' | 'EMPLOYEE';
   phone?: string;
+  plainPassword?: string;
+  createdAt?: string;
+}
+
+export interface CompanySettings {
+  name: string;
+  phone: string;
+  uan: string;
+  location: string;
+  description: string;
+  establishedYear: string;
+  terms: string;
+}
+
+export interface StockTypeData {
+  id: string;
+  name: string;
+  nameUrdu?: string;
+  code: string;
+  category: string;
+  defaultUnit: 'Bags' | 'Nugs' | 'Box' | 'Drums' | 'Bales' | 'Pcs';
+  standardWeightKg: number;
+  defaultUnitPricePkr: number;
+  description?: string;
 }
 
 export interface BrokerData {
@@ -13,19 +37,27 @@ export interface BrokerData {
   type: 'MAIN_BROKER' | 'CO_BROKER';
   phone: string;
   city: string;
+  stockTypes: string[];
+  ownAvailableBags: number;
+  ownAvailableWeight: number;
+  manualStockValuationPkr?: number;
+  isAttachedToMainBroker: boolean;
+  attachedToMainBrokerId?: string;
   allocatedQuotaBags: number;
   allocatedQuotaWeight: number;
   commissionRate: number;
   soldBags?: number;
-  soldWeight?: number;
+  ownSoldBags?: number;
   remainQuotaBags?: number;
   remainQuotaWeight?: number;
+  totalValuationPkr?: number;
 }
 
 export interface StockItemData {
   id: string;
   code: string;
   name: string;
+  stockTypeId?: string;
   category: string;
   standardBagWeightKg: number;
   unitPricePkr: number;
@@ -38,16 +70,21 @@ export interface StockItemData {
 
 export interface DispatchData {
   id: string;
+  irn: string;                    // Format: YYYYMMDD01, YYYYMMDD02...
   srNo: number;
-  biltyNo: string;
+  biltyNo: string;                // Editable / Manual Bilty Number
   brokerId: string;
   brokerName: string;
   brokerType: 'MAIN_BROKER' | 'CO_BROKER';
+  stockSource: 'MAIN_BROKER_STOCK' | 'OWN_STOCK';
   stockItemId?: string;
+  stockType?: string;
   materialDescription: string;
   quantityBags: number;
+  quantityUnit: 'Bags' | 'Nugs' | 'Box' | 'Drums' | 'Bales' | 'Pcs';
   weightKg: number;
   weightMaunds: number;
+  weightSlipNo: string;
   truckNo: string;
   driverName: string;
   driverCnic: string;
@@ -60,8 +97,10 @@ export interface DispatchData {
   rentAmountPkr: number;
   rentStatus: 'PAID' | 'PENDING';
   advancePaidPkr: number;
+  remainingRentPkr: number;
   balancePkr: number;
   paymentMethod: string;
+  paymentDate?: string;
   dispatchedBy: string;
   dispatchDate: string;
   remarks?: string;
@@ -69,23 +108,38 @@ export interface DispatchData {
 }
 
 export interface DashboardSummary {
-  mainBroker: {
+  company: CompanySettings;
+  stockTypes: StockTypeData[];
+  mainBrokers: Array<{
+    id: string;
     name: string;
-    totalValuationPkr: number;
+    phone: string;
+    city: string;
+    stockTypes: string[];
     availableBags: number;
     totalWeightKg: number;
     totalWeightMaunds: number;
     remainBags: number;
-  };
+    totalValuationPkr: number;
+    isManualValuation: boolean;
+  }>;
   coBrokers: Array<{
     id: string;
     name: string;
     phone: string;
+    city: string;
+    stockTypes: string[];
+    ownAvailableBags: number;
+    ownAvailableWeight: number;
+    isAttachedToMainBroker: boolean;
+    attachedToMainBrokerName?: string;
     allocatedQuotaBags: number;
     soldBags: number;
+    ownSoldBags: number;
     remainQuotaBags: number;
     soldWeightMaunds: number;
     totalValuationPkr: number;
+    isManualValuation: boolean;
     quotaPercentage: number;
   }>;
   grandTotals: {
@@ -95,7 +149,7 @@ export interface DashboardSummary {
     totalWeightTons: number;
     totalRentPkr: number;
     paidRentPkr: number;
-    pendingRentPkr: number;
+    remainingRentPkr: number;
     totalDispatches: number;
   };
 }

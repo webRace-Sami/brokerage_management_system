@@ -4,6 +4,14 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Madina Goods Transport Company, Chiniot - Munshi Portal',
   description: 'Enterprise Brokerage & Live Inventory Transport Management System for Madina Goods Transport Company, Chiniot.',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -14,6 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

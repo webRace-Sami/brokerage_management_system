@@ -1,19 +1,21 @@
 'use client';
 
 import React from 'react';
-import { X, Printer, Truck, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
-import { DispatchData } from '@/lib/types';
+import { X, Printer, Truck } from 'lucide-react';
+import { DispatchData, CompanySettings } from '@/lib/types';
 
 interface BiltyPrintModalProps {
   isOpen: boolean;
   onClose: () => void;
   dispatch: DispatchData | null;
+  company?: CompanySettings | null;
 }
 
 export default function BiltyPrintModal({
   isOpen,
   onClose,
   dispatch,
+  company,
 }: BiltyPrintModalProps) {
   if (!isOpen || !dispatch) return null;
 
@@ -21,17 +23,29 @@ export default function BiltyPrintModal({
     window.print();
   };
 
-  const isPaid = dispatch.rentStatus === 'PAID';
+  const totalRent = dispatch.rentAmountPkr || 0;
+  const advancePaid = dispatch.advancePaidPkr || 0;
+  const remainingRent = dispatch.remainingRentPkr !== undefined ? dispatch.remainingRentPkr : Math.max(0, totalRent - advancePaid);
+  const isPaid = remainingRent === 0;
+  const irnNumber = dispatch.irn || dispatch.srNo;
+  const unit = dispatch.quantityUnit || 'Bags';
+  const slip = dispatch.weightSlipNo || 'xdk-2983 / 232444';
+
+  const companyName = company?.name || 'MADINA GOODS TRANSPORT COMPANY';
+  const companyPhone = company?.phone || '0300-6501234';
+  const companyUan = company?.uan || '047-6331234';
+  const companyLocation = company?.location || 'Sargodha Road Bypass, Chiniot, Punjab, Pakistan';
+  const companyTerms = company?.terms || 'مال کی لوڈنگ و انلوڈنگ کے دوران مکمل احتیاط کی جاتی ہے۔ کسی بھی حادثہ کی صورت میں بلٹی شرائط لاگو ہوں گی۔';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/75 backdrop-blur-xs overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-2xl border border-slate-300 w-full max-w-3xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[95vh]">
-        {/* Modal Top Bar (Hidden during print) */}
+        {/* Modal Top Bar */}
         <div className="bg-slate-900 text-white p-4 flex items-center justify-between no-print border-b border-slate-800">
           <div className="flex items-center gap-2">
             <Printer className="w-5 h-5 text-emerald-400" />
             <span className="font-bold text-sm sm:text-base font-['Outfit']">
-              Transport Bilty Slip / Receipt (بلٹی پرنٹ) - {dispatch.biltyNo}
+              Transport Bilty Receipt (بلٹی پرنٹ) - {dispatch.irn || `IRN#${dispatch.srNo}`} ({dispatch.biltyNo})
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -53,55 +67,50 @@ export default function BiltyPrintModal({
 
         {/* Printable Area */}
         <div className="p-6 sm:p-8 overflow-y-auto flex-1 bg-white text-slate-900" id="printable-bilty">
-          {/* Slip Outer Border (Classic Pakistani Goods Transport Receipt Format) */}
           <div className="border-2 border-slate-900 rounded-lg p-5 sm:p-6 bg-white font-sans text-xs space-y-4">
             {/* Header / Company Title */}
             <div className="text-center border-b-2 border-slate-900 pb-3">
               <div className="text-[11px] font-bold text-slate-700 tracking-wider">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
               <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 font-['Outfit'] uppercase">
-                MADINA GOODS TRANSPORT COMPANY
+                {companyName}
               </h1>
               <div className="text-sm font-bold text-slate-800">
-                مدینہ گڈز ٹرانسپورٹ کمپنی (رجسٹرڈ) چنیوٹ
+                گڈز ٹرانسپورٹ کمپنی (رجسٹرڈ)
               </div>
               <p className="text-[11px] text-slate-600 mt-0.5 font-medium">
-                Head Office & Main Stand: Sargodha Road Bypass, Chiniot | Helpline / UAN: 0300-6501234
+                Head Office: {companyLocation} | Booking: {companyPhone} {companyUan ? `| UAN: ${companyUan}` : ''}
               </p>
             </div>
 
             {/* Bilty Metadata Header Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-b border-slate-300 pb-3 text-xs">
               <div className="bg-slate-50 p-2 rounded border border-slate-200">
+                <span className="text-[10px] text-slate-500 block font-bold uppercase">Inspection Receipt</span>
+                <span className="font-mono font-black text-slate-900 text-sm">{dispatch.irn || `IRN#${dispatch.srNo}`}</span>
+              </div>
+              <div className="bg-slate-50 p-2 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-500 block font-bold uppercase">Bilty No.</span>
                 <span className="font-mono font-black text-slate-900 text-sm">{dispatch.biltyNo}</span>
               </div>
               <div className="bg-slate-50 p-2 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 block font-bold uppercase">Sr No.</span>
-                <span className="font-mono font-bold text-slate-900 text-sm">#{dispatch.srNo}</span>
-              </div>
-              <div className="bg-slate-50 p-2 rounded border border-slate-200">
                 <span className="text-[10px] text-slate-500 block font-bold uppercase">Dispatch Date</span>
                 <span className="font-medium text-slate-900">
-                  {new Date(dispatch.dispatchDate).toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
+                  {dispatch.dispatchDate || new Date(dispatch.createdAt).toLocaleDateString('en-GB')}
                 </span>
               </div>
               <div className="bg-slate-50 p-2 rounded border border-slate-200">
-                <span className="text-[10px] text-slate-500 block font-bold uppercase">Rent Status</span>
+                <span className="text-[10px] text-slate-500 block font-bold uppercase">Payment Status</span>
                 <span
                   className={`font-bold px-1.5 py-0.5 rounded text-[11px] inline-block ${
                     isPaid ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'
                   }`}
                 >
-                  {isPaid ? 'PAID (مکمل ادا شدہ)' : 'PENDING (وصولی باقی)'}
+                  {isPaid ? 'PAID (مکمل ادا)' : `PENDING (بقایا: ${remainingRent})`}
                 </span>
               </div>
             </div>
 
-            {/* 2 Columns: Consignor (Broker) & Consignee (Shopkeeper) */}
+            {/* 2 Columns: Consignor & Consignee */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-slate-300 pb-3">
               {/* Consignor */}
               <div className="border border-slate-300 rounded p-2.5 space-y-1">
@@ -110,9 +119,9 @@ export default function BiltyPrintModal({
                 </span>
                 <div className="font-bold text-sm text-slate-900 pt-1">{dispatch.brokerName}</div>
                 <div className="text-[11px] text-slate-600">
-                  Broker Type: {dispatch.brokerType === 'MAIN_BROKER' ? 'Main-Broker' : 'Co-Broker'}
+                  Stock Source: <strong>{dispatch.stockSource === 'OWN_STOCK' ? 'Co-Broker Own Stock' : 'Main-Broker Shared Stock'}</strong>
                 </div>
-                <div className="text-[11px] text-slate-500">Dispatch Location: Chiniot Godowns</div>
+                <div className="text-[11px] text-slate-500">Dispatch Godown: Central Stand</div>
               </div>
 
               {/* Consignee */}
@@ -131,7 +140,7 @@ export default function BiltyPrintModal({
               </div>
             </div>
 
-            {/* Vehicle & Driver Box */}
+            {/* Vehicle, Driver & Weight Slip */}
             <div className="border border-slate-300 rounded p-2.5 bg-slate-50/50">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 <div>
@@ -147,71 +156,76 @@ export default function BiltyPrintModal({
                   <span className="font-mono text-slate-800">{dispatch.driverCnic}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 block font-semibold">Driver Phone:</span>
-                  <span className="text-slate-800">{dispatch.driverPhone || 'N/A'}</span>
+                  <span className="text-[10px] text-slate-500 block font-semibold">Weight Slip No. (کانٹا پرچی):</span>
+                  <span className="font-mono font-bold text-amber-900 bg-amber-100 px-1 py-0.5 rounded">
+                    {slip}
+                  </span>
                 </div>
               </div>
             </div>
 
-            {/* Goods Description & Charges Table */}
+            {/* Goods Table */}
             <div className="border border-slate-900 rounded overflow-hidden">
               <table className="w-full text-left text-xs border-collapse">
                 <thead className="bg-slate-100 text-slate-900 font-bold border-b border-slate-900 uppercase">
                   <tr>
-                    <th className="p-2 border-r border-slate-300">Goods / Material Description (تفصیل مال)</th>
-                    <th className="p-2 text-right border-r border-slate-300">Bags / Pcs (تعداد)</th>
+                    <th className="p-2 border-r border-slate-300">Goods Description (تفصیل مال)</th>
+                    <th className="p-2 text-right border-r border-slate-300">Quantity & Unit (تعداد)</th>
                     <th className="p-2 text-right border-r border-slate-300">Weight (وزن من)</th>
-                    <th className="p-2 text-right">Freight Rent (کرایہ PKR)</th>
+                    <th className="p-2 text-right">Freight (کرایہ PKR)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-300">
                   <tr>
                     <td className="p-2.5 font-bold text-slate-900 border-r border-slate-300">
-                      {dispatch.materialDescription}
+                      <div>{dispatch.materialDescription}</div>
+                      {dispatch.stockType && (
+                        <div className="text-[10px] text-purple-700 font-normal">Commodity: {dispatch.stockType}</div>
+                      )}
                     </td>
-                    <td className="p-2.5 text-right font-mono font-black text-slate-900 border-r border-slate-300">
-                      {dispatch.quantityBags.toLocaleString()} Bags
+                    <td className="p-2.5 text-right font-mono font-black text-slate-900 border-r border-slate-300 text-sm">
+                      {dispatch.quantityBags.toLocaleString()} {unit}
                     </td>
                     <td className="p-2.5 text-right font-mono font-bold text-slate-900 border-r border-slate-300">
                       {dispatch.weightMaunds} Maunds ({dispatch.weightKg} kg)
                     </td>
                     <td className="p-2.5 text-right font-mono font-black text-slate-900 text-sm">
-                      PKR {dispatch.rentAmountPkr.toLocaleString()}
+                      PKR {totalRent.toLocaleString()}
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
 
-            {/* Rent Summary Calculation Breakdown */}
+            {/* Rent & Remaining Balance Calculation */}
             <div className="flex justify-end">
-              <div className="w-full sm:w-64 border border-slate-300 rounded p-2.5 space-y-1 bg-slate-50 text-xs">
+              <div className="w-full sm:w-72 border border-slate-300 rounded p-3 space-y-1 bg-slate-50 text-xs">
                 <div className="flex justify-between">
                   <span className="text-slate-600">Total Freight (کل کرایہ):</span>
                   <span className="font-mono font-bold text-slate-900">
-                    PKR {dispatch.rentAmountPkr.toLocaleString()}
+                    PKR {totalRent.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-600">Advance Paid (پیشگی):</span>
-                  <span className="font-mono font-medium text-emerald-700">
-                    PKR {dispatch.advancePaidPkr.toLocaleString()}
+                  <span className="text-slate-600">Paid / Advance (پیشگی):</span>
+                  <span className="font-mono font-semibold text-emerald-700">
+                    PKR {advancePaid.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between border-t border-slate-300 pt-1 font-bold">
-                  <span className="text-slate-900">Balance Due (بقایا):</span>
+                  <span className="text-slate-900">Remaining Balance (بقایا کرایہ):</span>
                   <span
-                    className={`font-mono ${
-                      dispatch.balancePkr > 0 ? 'text-red-600 font-black' : 'text-emerald-700'
+                    className={`font-mono text-sm ${
+                      remainingRent > 0 ? 'text-red-600 font-black' : 'text-emerald-700'
                     }`}
                   >
-                    PKR {dispatch.balancePkr.toLocaleString()}
+                    PKR {remainingRent.toLocaleString()}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Munshi Booking Details & Signatures */}
+            {/* Signatures */}
             <div className="pt-4 border-t border-slate-300 grid grid-cols-3 gap-4 text-center text-xs">
               <div className="border-t border-slate-400 pt-1">
                 <div className="font-bold text-slate-800">{dispatch.dispatchedBy}</div>
@@ -227,22 +241,21 @@ export default function BiltyPrintModal({
               </div>
             </div>
 
-            {/* Terms Footer */}
             <div className="text-[9px] text-slate-500 text-center pt-2 border-t border-dashed border-slate-300">
-              * نوٹ: راستہ میں کسی قسم کے حادثہ، آگ یا قدرتی آفت کی صورت میں کمپنی ذمہ دار نہ ہوگی۔ رسید پر دستخط کے بعد مال کی تصدیق مانی جائے گی۔
+              * نوٹ: {companyTerms}
             </div>
           </div>
         </div>
 
-        {/* Modal Footer (Hidden during print) */}
+        {/* Modal Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between no-print">
-          <span className="text-xs text-slate-500 font-medium">
-            Standard 80mm / A4 Print Format Supported
+          <span className="text-xs text-slate-500">
+            Standard Thermal / A4 Print Format Supported
           </span>
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-300 rounded-xl"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-300 rounded-xl"
             >
               Close
             </button>

@@ -160,59 +160,33 @@ export default function LoginPage() {
           {/* Quick-Fill Demo Credentials Selector */}
           <div className="mt-6 pt-5 border-t border-slate-800 space-y-2.5">
             <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">
-              Quick One-Click Authorized Accounts
+              Quick One-Click Demo Login
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="flex justify-center">
               {/* Admin Button */}
               <button
                 type="button"
                 onClick={() => handleQuickFill('admin', 'MadinaAdmin@2026!')}
-                className="p-2.5 bg-amber-950/40 hover:bg-amber-950/70 border border-amber-600/40 rounded-xl text-left transition-all group"
+                className="w-full p-3 bg-amber-950/40 hover:bg-amber-950/70 border border-amber-600/50 rounded-xl text-left transition-all group flex items-center justify-between"
               >
-                <div className="flex items-center gap-1 text-[11px] font-bold text-amber-300">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                  Admin Account
+                <div>
+                  <div className="flex items-center gap-1 text-xs font-bold text-amber-300">
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    Admin Account (Haji Abdul Rehman)
+                  </div>
+                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                    User: <strong className="text-white">admin</strong> | Pass: <strong className="text-white">MadinaAdmin@2026!</strong>
+                  </div>
                 </div>
-                <div className="text-[10px] text-slate-400 font-mono mt-0.5">admin (Full Control)</div>
-              </button>
-
-              {/* Munshi 1 Button */}
-              <button
-                type="button"
-                onClick={() => handleQuickFill('munshi1', 'MunshiPass@2026')}
-                className="p-2.5 bg-emerald-950/40 hover:bg-emerald-950/70 border border-emerald-600/40 rounded-xl text-left transition-all group"
-              >
-                <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-300">
-                  <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  Munshi Aslam
-                </div>
-                <div className="text-[10px] text-slate-400 font-mono mt-0.5">munshi1 (Staff)</div>
-              </button>
-
-              {/* Munshi 2 Button */}
-              <button
-                type="button"
-                onClick={() => handleQuickFill('munshi2', 'MunshiPass@2026')}
-                className="p-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition-all"
-              >
-                <div className="text-[11px] font-bold text-slate-200">Munshi Tariq</div>
-                <div className="text-[10px] text-slate-400 font-mono">munshi2</div>
-              </button>
-
-              {/* Munshi 3 Button */}
-              <button
-                type="button"
-                onClick={() => handleQuickFill('munshi3', 'MunshiPass@2026')}
-                className="p-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700 rounded-xl text-left transition-all"
-              >
-                <div className="text-[11px] font-bold text-slate-200">Munshi Imran</div>
-                <div className="text-[10px] text-slate-400 font-mono">munshi3</div>
+                <span className="text-xs font-bold text-amber-400 bg-amber-900/50 px-2.5 py-1 rounded-lg border border-amber-600/40">
+                  Fill Credentials
+                </span>
               </button>
             </div>
 
             <div className="text-[10px] text-center text-slate-500 pt-1">
-              * Protected System: Public registration disabled. Only developer/admin provisioned staff can access.
+              * Staff accounts can be created and managed by the Admin inside the Dashboard under &quot;+ Manage Users&quot;.
             </div>
           </div>
         </div>

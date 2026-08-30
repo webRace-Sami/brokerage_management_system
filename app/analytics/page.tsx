@@ -133,7 +133,7 @@ export default function AnalyticsPage() {
 
   // 3. Rent Payment Doughnut Data
   const paidRent = summary?.grandTotals?.paidRentPkr || 0;
-  const pendingRent = summary?.grandTotals?.pendingRentPkr || 0;
+  const pendingRent = summary?.grandTotals?.remainingRentPkr !== undefined ? summary.grandTotals.remainingRentPkr : 0;
 
   const rentChartData = {
     labels: ['Paid Freight (PKR)', 'Pending Freight (PKR)'],
@@ -150,28 +150,33 @@ export default function AnalyticsPage() {
   // 4. Top Destination Cities
   const cityCounts: Record<string, number> = {};
   dispatches.forEach((d) => {
-    cityCounts[d.destinationCity] = (cityCounts[d.destinationCity] || 0) + 1;
+    if (d.destinationCity) {
+      cityCounts[d.destinationCity] = (cityCounts[d.destinationCity] || 0) + 1;
+    }
   });
 
   const cityLabels = Object.keys(cityCounts);
   const cityValues = Object.values(cityCounts);
 
   const cityChartData = {
-    labels: cityLabels,
+    labels: cityLabels.length > 0 ? cityLabels : ['No Data'],
     datasets: [
       {
         label: 'Truck Dispatches Count',
-        data: cityValues,
+        data: cityValues.length > 0 ? cityValues : [0],
         backgroundColor: '#8b5cf6',
         borderRadius: 6,
       },
     ],
   };
 
+  const totalBagsCount = summary?.grandTotals?.totalBags || 0;
+  const totalMaundsCount = summary?.grandTotals?.totalWeightMaunds || 0;
+
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
       {/* Top Navbar */}
-      <Navbar user={currentUser} />
+      <Navbar user={currentUser} company={summary?.company} />
 
       {/* Main Container */}
       <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 flex-1">
@@ -193,7 +198,7 @@ export default function AnalyticsPage() {
                 </h1>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                Madina Goods Transport Company, Chiniot - Operations & Brokerage Intelligence
+                {summary?.company?.name || 'Madina Goods Transport Company, Chiniot'} - Operations & Brokerage Intelligence
               </p>
             </div>
           </div>
@@ -224,7 +229,7 @@ export default function AnalyticsPage() {
                 <div>
                   <div className="text-xs text-slate-400 font-semibold uppercase">Total Dispatched</div>
                   <div className="text-xl font-black text-slate-900 font-mono">
-                    {summary?.grandTotals.totalBags.toLocaleString()} Bags
+                    {totalBagsCount.toLocaleString()} Bags / Nugs
                   </div>
                 </div>
               </div>
@@ -236,7 +241,7 @@ export default function AnalyticsPage() {
                 <div>
                   <div className="text-xs text-slate-400 font-semibold uppercase">Total Weight</div>
                   <div className="text-xl font-black text-slate-900 font-mono">
-                    {summary?.grandTotals.totalWeightMaunds.toLocaleString()} Maunds
+                    {totalMaundsCount.toLocaleString()} Maunds
                   </div>
                 </div>
               </div>
@@ -248,7 +253,7 @@ export default function AnalyticsPage() {
                 <div>
                   <div className="text-xs text-slate-400 font-semibold uppercase">Freight Paid</div>
                   <div className="text-xl font-black text-emerald-700 font-mono">
-                    PKR {summary?.grandTotals.paidRentPkr.toLocaleString()}
+                    PKR {paidRent.toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -260,7 +265,7 @@ export default function AnalyticsPage() {
                 <div>
                   <div className="text-xs text-slate-400 font-semibold uppercase">Freight Pending</div>
                   <div className="text-xl font-black text-amber-700 font-mono">
-                    PKR {summary?.grandTotals.pendingRentPkr.toLocaleString()}
+                    PKR {pendingRent.toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -353,7 +358,7 @@ export default function AnalyticsPage() {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer company={summary?.company} />
     </div>
   );
 }

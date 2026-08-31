@@ -455,21 +455,21 @@ declare global {
   var _inMemoryStore: any;
 }
 
-function getDataFilePath() {
-  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+function saveStore(data: any) {
+  global._inMemoryStore = data;
+  const jsonStr = JSON.stringify(data, null, 2);
+
+  // 1. Write to local workspace storage if writable
+  try {
+    const localPath = path.join(process.cwd(), '.data_store.json');
+    fs.writeFileSync(localPath, jsonStr, 'utf-8');
+  } catch (e) {}
+
+  // 2. Also write to /tmp for serverless container preservation
+  try {
     const tmpPath = path.join('/tmp', '.data_store.json');
-    if (!fs.existsSync(tmpPath)) {
-      try {
-        const localPath = path.join(process.cwd(), '.data_store.json');
-        if (fs.existsSync(localPath)) {
-          const content = fs.readFileSync(localPath, 'utf-8');
-          fs.writeFileSync(tmpPath, content, 'utf-8');
-        }
-      } catch (e) {}
-    }
-    return tmpPath;
-  }
-  return path.join(process.cwd(), '.data_store.json');
+    fs.writeFileSync(tmpPath, jsonStr, 'utf-8');
+  } catch (e) {}
 }
 
 function loadStore() {
@@ -477,30 +477,32 @@ function loadStore() {
     return global._inMemoryStore;
   }
 
-  const filePath = getDataFilePath();
+  // 1. Check /tmp first for latest serverless state
   try {
-    if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf-8');
+    const tmpPath = path.join('/tmp', '.data_store.json');
+    if (fs.existsSync(tmpPath)) {
+      const content = fs.readFileSync(tmpPath, 'utf-8');
       const parsed = JSON.parse(content);
       if (parsed.brokers && parsed.dispatches) {
         if (!parsed.companySettings) parsed.companySettings = initialCompanySettings;
         if (!parsed.stockTypes) parsed.stockTypes = initialStockTypes;
-        if (!parsed.users || parsed.users.length === 0) parsed.users = initialUsers;
+        if (!parsed.users) parsed.users = initialUsers;
         global._inMemoryStore = parsed;
         return parsed;
       }
     }
   } catch (e) {}
 
+  // 2. Check local project root .data_store.json
   try {
-    const bundledPath = path.join(process.cwd(), '.data_store.json');
-    if (fs.existsSync(bundledPath)) {
-      const content = fs.readFileSync(bundledPath, 'utf-8');
+    const localPath = path.join(process.cwd(), '.data_store.json');
+    if (fs.existsSync(localPath)) {
+      const content = fs.readFileSync(localPath, 'utf-8');
       const parsed = JSON.parse(content);
       if (parsed.brokers && parsed.dispatches) {
         if (!parsed.companySettings) parsed.companySettings = initialCompanySettings;
         if (!parsed.stockTypes) parsed.stockTypes = initialStockTypes;
-        if (!parsed.users || parsed.users.length === 0) parsed.users = initialUsers;
+        if (!parsed.users) parsed.users = initialUsers;
         global._inMemoryStore = parsed;
         return parsed;
       }
@@ -518,19 +520,6 @@ function loadStore() {
   global._inMemoryStore = defaultStore;
   saveStore(defaultStore);
   return defaultStore;
-}
-
-function saveStore(data: any) {
-  global._inMemoryStore = data;
-  const filePath = getDataFilePath();
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {
-    try {
-      const tmpPath = path.join('/tmp', '.data_store.json');
-      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
-    } catch (e2) {}
-  }
 }
 
 export const db = {

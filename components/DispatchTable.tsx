@@ -389,53 +389,55 @@ export default function DispatchTable({
                       </div>
                     </td>
 
-                    {/* 10. Actions */}
-                    <td className="py-3 px-3 text-center sticky right-0 bg-white group-hover:bg-slate-50/90 shadow-sm">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {/* Print Bilty */}
-                        <button
-                          onClick={() => onPrintBilty(dispatch)}
-                          title="Generate & Print Bilty Slip (بلٹی)"
-                          className="p-1.5 text-slate-700 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 rounded-lg border border-slate-200 transition-all shadow-xs"
-                        >
-                          <Printer className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Update Payment */}
-                        <button
-                          onClick={() => onUpdatePayment(dispatch)}
-                          title="Record Payment / Collect Remaining Rent"
-                          className="p-1.5 text-slate-700 hover:text-amber-700 bg-slate-100 hover:bg-amber-50 rounded-lg border border-slate-200 transition-all shadow-xs"
-                        >
-                          <DollarSign className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Edit Dispatch */}
-                        <button
-                          onClick={() => onEditDispatch(dispatch)}
-                          title="Edit Dispatch Details"
-                          className="p-1.5 text-slate-700 hover:text-indigo-700 bg-slate-100 hover:bg-indigo-50 rounded-lg border border-slate-200 transition-all shadow-xs"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Delete Dispatch (Admin Only) */}
-                        {isAdmin ? (
+                    {/* 10. Actions (Print & Price on top row, Pen & Delete on bottom row) */}
+                    <td className="py-2.5 px-2 text-center sticky right-0 bg-white group-hover:bg-slate-50/95 shadow-sm">
+                      <div className="flex flex-col items-center justify-center gap-1.5 w-max mx-auto">
+                        {/* Upper Row: Print Icon & Price Icon */}
+                        <div className="flex items-center gap-1.5">
                           <button
-                            onClick={() => onDeleteDispatch(dispatch)}
-                            title="Delete Dispatch (Admin Only)"
-                            className="p-1.5 text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 rounded-lg border border-slate-200 transition-all shadow-xs"
+                            onClick={() => onPrintBilty(dispatch)}
+                            title="Generate & Print Bilty Slip (بلٹی پرنٹ)"
+                            className="p-1.5 text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200 transition-all shadow-xs active:scale-95 flex items-center justify-center"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Printer className="w-3.5 h-3.5" />
                           </button>
-                        ) : (
-                          <span
-                            title="Delete restricted to Admin"
-                            className="p-1.5 text-slate-300 bg-slate-50 rounded-lg border border-slate-200 cursor-not-allowed"
+
+                          <button
+                            onClick={() => onUpdatePayment(dispatch)}
+                            title="Record Payment / Collect Rent (کرایہ وصولی)"
+                            className="p-1.5 text-amber-700 hover:text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-all shadow-xs active:scale-95 flex items-center justify-center"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </span>
-                        )}
+                            <DollarSign className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Lower Row: Pen Icon & Delete Icon */}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => onEditDispatch(dispatch)}
+                            title="Edit Dispatch Details (ترمیم)"
+                            className="p-1.5 text-indigo-700 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 rounded-lg border border-indigo-200 transition-all shadow-xs active:scale-95 flex items-center justify-center"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+
+                          {isAdmin ? (
+                            <button
+                              onClick={() => onDeleteDispatch(dispatch)}
+                              title="Delete Dispatch (حذف - Admin Only)"
+                              className="p-1.5 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-all shadow-xs active:scale-95 flex items-center justify-center"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          ) : (
+                            <span
+                              title="Delete restricted to Admin"
+                              className="p-1.5 text-slate-300 bg-slate-50 rounded-lg border border-slate-200 cursor-not-allowed flex items-center justify-center"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>

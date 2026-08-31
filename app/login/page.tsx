@@ -51,13 +51,6 @@ export default function LoginPage() {
     }
   };
 
-  // Quick fill helper for testing authorized accounts
-  const handleQuickFill = (user: string, pass: string) => {
-    setUsernameOrEmail(user);
-    setPassword(pass);
-    setError(null);
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
       {/* Top Navbar */}
@@ -163,37 +156,12 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Quick-Fill Demo Credentials Selector */}
-          <div className="mt-6 pt-5 border-t border-slate-800 space-y-2.5">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider text-center">
-              Quick One-Click Demo Login
-            </div>
-
-            <div className="flex justify-center">
-              {/* Admin Button */}
-              <button
-                type="button"
-                onClick={() => handleQuickFill('admin', 'MadinaAdmin@2026!')}
-                className="w-full p-3 bg-amber-950/40 hover:bg-amber-950/70 border border-amber-600/50 rounded-xl text-left transition-all group flex items-center justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-1 text-xs font-bold text-amber-300">
-                    <ShieldCheck className="w-4 h-4 text-amber-400" />
-                    Admin Account (Haji Abdul Rehman)
-                  </div>
-                  <div className="text-[11px] text-slate-400 font-mono mt-0.5">
-                    User: <strong className="text-white">admin</strong> | Pass: <strong className="text-white">MadinaAdmin@2026!</strong>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-amber-400 bg-amber-900/50 px-2.5 py-1 rounded-lg border border-amber-600/40">
-                  Fill Credentials
-                </span>
-              </button>
-            </div>
-
-            <div className="text-[10px] text-center text-slate-500 pt-1">
-              * Staff accounts can be created and managed by the Admin inside the Dashboard under &quot;+ Manage Users&quot;.
-            </div>
+          {/* Security Notice */}
+          <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+            <p className="text-[11px] text-slate-400 flex items-center justify-center gap-1.5 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Secure Authorized Access Only. Contact Admin for account assistance.</span>
+            </p>
           </div>
         </div>
       </main>

@@ -140,9 +140,8 @@ export default function UpdatePaymentModal({
               name="advancePaidPkr"
               type="number"
               min="0"
-              max={totalRent}
               value={advancePaidPkr}
-              onChange={(e) => setAdvancePaidPkr(e.target.value ? Number(e.target.value) : '')}
+              onChange={(e) => setAdvancePaidPkr(e.target.value === '' ? '' : Number(e.target.value))}
               placeholder="e.g. 20000"
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-mono font-bold"
               required

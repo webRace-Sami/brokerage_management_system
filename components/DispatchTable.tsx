@@ -421,22 +421,13 @@ export default function DispatchTable({
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
 
-                          {isAdmin ? (
-                            <button
-                              onClick={() => onDeleteDispatch(dispatch)}
-                              title="Delete Dispatch (حذف - Admin Only)"
-                              className="p-1.5 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-all shadow-xs active:scale-95 flex items-center justify-center"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          ) : (
-                            <span
-                              title="Delete restricted to Admin"
-                              className="p-1.5 text-slate-300 bg-slate-50 rounded-lg border border-slate-200 cursor-not-allowed flex items-center justify-center"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </span>
-                          )}
+                          <button
+                            onClick={() => onDeleteDispatch(dispatch)}
+                            title="Delete Dispatch (حذف)"
+                            className="p-1.5 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200 transition-all shadow-xs active:scale-95 flex items-center justify-center"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
                     </td>

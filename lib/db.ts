@@ -523,6 +523,28 @@ function loadStore() {
 }
 
 export const db = {
+  // FULL STORE & SYNC
+  getFullStore: () => {
+    return loadStore();
+  },
+
+  syncFullStore: (incomingStore: any) => {
+    if (!incomingStore || typeof incomingStore !== 'object') {
+      return loadStore();
+    }
+    const current = loadStore();
+    const merged = {
+      companySettings: incomingStore.companySettings || current.companySettings || initialCompanySettings,
+      stockTypes: Array.isArray(incomingStore.stockTypes) && incomingStore.stockTypes.length > 0 ? incomingStore.stockTypes : (current.stockTypes || initialStockTypes),
+      users: Array.isArray(incomingStore.users) && incomingStore.users.length > 0 ? incomingStore.users : (current.users || initialUsers),
+      brokers: Array.isArray(incomingStore.brokers) && incomingStore.brokers.length > 0 ? incomingStore.brokers : (current.brokers || initialBrokers),
+      stockItems: Array.isArray(incomingStore.stockItems) && incomingStore.stockItems.length > 0 ? incomingStore.stockItems : (current.stockItems || initialStockItems),
+      dispatches: Array.isArray(incomingStore.dispatches) ? incomingStore.dispatches : (current.dispatches || initialDispatches),
+    };
+    saveStore(merged);
+    return merged;
+  },
+
   // COMPANY SETTINGS
   getCompanySettings: async () => {
     const store = loadStore();
@@ -678,11 +700,11 @@ export const db = {
   findUser: async (query: { usernameOrEmail?: string; id?: string }) => {
     const store = loadStore();
     if (query.id) {
-      return store.users.find((u: any) => u.id === query.id) || null;
+      return store.users.find((u: any) => u.id === query.id || u.username?.toLowerCase() === query.id?.toLowerCase()) || null;
     }
     if (query.usernameOrEmail) {
       const q = query.usernameOrEmail.toLowerCase().trim();
-      return store.users.find((u: any) => u.username === q || u.email === q) || null;
+      return store.users.find((u: any) => u.username?.toLowerCase() === q || u.email?.toLowerCase() === q) || null;
     }
     return null;
   },
@@ -697,7 +719,7 @@ export const db = {
     name: string;
     type: 'MAIN_BROKER' | 'CO_BROKER';
     phone: string;
-    city: string;
+    city?: string;
     stockTypes?: string[];
     ownAvailableBags?: number;
     ownAvailableWeight?: number;
@@ -717,7 +739,7 @@ export const db = {
       name: brokerData.name.trim(),
       type: brokerData.type,
       phone: brokerData.phone.trim(),
-      city: brokerData.city.trim() || 'Chiniot',
+      city: brokerData.city?.trim() || 'Chiniot',
       stockTypes: Array.isArray(brokerData.stockTypes) && brokerData.stockTypes.length > 0 ? brokerData.stockTypes : ['General Cargo'],
       ownAvailableBags: bags,
       ownAvailableWeight: Number(brokerData.ownAvailableWeight) || (bags * 50) / 40,
@@ -736,7 +758,7 @@ export const db = {
 
   updateBroker: async (id: string, updates: any) => {
     const store = loadStore();
-    const index = store.brokers.findIndex((b: any) => b.id === id);
+    const index = store.brokers.findIndex((b: any) => b.id === id || b.name?.toLowerCase() === id?.toLowerCase());
     if (index !== -1) {
       const current = store.brokers[index];
       const ownBags = updates.ownAvailableBags !== undefined ? Number(updates.ownAvailableBags) : current.ownAvailableBags;
@@ -758,7 +780,7 @@ export const db = {
 
   deleteBroker: async (id: string) => {
     const store = loadStore();
-    const index = store.brokers.findIndex((b: any) => b.id === id);
+    const index = store.brokers.findIndex((b: any) => b.id === id || b.name?.toLowerCase() === id?.toLowerCase());
     if (index !== -1) {
       const deleted = store.brokers.splice(index, 1)[0];
       saveStore(store);
@@ -790,36 +812,61 @@ export const db = {
 
   addStockInward: async (inwardData: any) => {
     const store = loadStore();
-    const stockItem = store.stockItems.find((s: any) => s.id === inwardData.stockItemId);
-    if (stockItem) {
-      stockItem.totalBagsInward += inwardData.quantityBags;
-      stockItem.totalWeightKg += inwardData.weightKg;
-      stockItem.availableBags += inwardData.quantityBags;
-      stockItem.availableWeightKg += inwardData.weightKg;
-      saveStore(store);
+    const stock = store.stockItems.find((s: any) => s.id === inwardData.stockItemId || s.name?.toLowerCase() === inwardData.stockItemId?.toLowerCase());
+    if (stock) {
+      const bags = Number(inwardData.quantityBags) || 0;
+      const wtKg = Number(inwardData.weightKg) || (bags * (stock.standardBagWeightKg || 50));
+      stock.totalBagsInward = (stock.totalBagsInward || 0) + bags;
+      stock.totalWeightKg = (stock.totalWeightKg || 0) + wtKg;
+      stock.availableBags = (stock.availableBags || 0) + bags;
+      stock.availableWeightKg = (stock.availableWeightKg || 0) + wtKg;
     }
+    saveStore(store);
     return inwardData;
   },
 
+  recordStockInward: async (inwardData: {
+    stockItemId: string;
+    bagsAdded: number;
+    weightKgAdded?: number;
+    supplierName?: string;
+    notes?: string;
+  }) => {
+    const store = loadStore();
+    const stock = store.stockItems.find((s: any) => s.id === inwardData.stockItemId || s.name?.toLowerCase() === inwardData.stockItemId?.toLowerCase());
+    if (!stock) throw new Error('Stock item not found');
+
+    const bags = Number(inwardData.bagsAdded) || 0;
+    const wtKg = Number(inwardData.weightKgAdded) || (bags * (stock.standardBagWeightKg || 50));
+
+    stock.totalBagsInward += bags;
+    stock.totalWeightKg += wtKg;
+    stock.availableBags += bags;
+    stock.availableWeightKg += wtKg;
+
+    saveStore(store);
+    return stock;
+  },
+
   // DISPATCHES & IRN (Format: YYYYMMDD01, YYYYMMDD02, YYYYMMDD03...)
-  getDispatches: async (filters: { brokerId?: string; rentStatus?: string; search?: string; irn?: string }) => {
+  getDispatches: async (filters?: { brokerId?: string; rentStatus?: string; search?: string; irn?: string }) => {
     const store = loadStore();
     let list = [...store.dispatches].reverse();
 
-    if (filters.brokerId && filters.brokerId !== 'ALL') {
-      list = list.filter((d) => d.brokerId === filters.brokerId);
+    if (filters?.brokerId && filters.brokerId !== 'ALL') {
+      list = list.filter((d: any) => d.brokerId === filters.brokerId);
     }
-    if (filters.rentStatus && filters.rentStatus !== 'ALL') {
-      list = list.filter((d) => d.rentStatus === filters.rentStatus);
+    if (filters?.rentStatus && filters.rentStatus !== 'ALL') {
+      list = list.filter((d: any) => d.rentStatus === filters.rentStatus);
     }
-    if (filters.irn) {
+    if (filters?.irn) {
       const q = filters.irn.toLowerCase().trim().replace(/^irn#?/i, '');
-      list = list.filter((d) => (d.irn || '').toLowerCase().includes(q) || d.srNo?.toString() === q);
+      list = list.filter((d: any) => (d.irn || '').toLowerCase().includes(q) || d.srNo?.toString() === q || d.biltyNo?.toLowerCase().includes(q));
     }
-    if (filters.search) {
+    if (filters?.search) {
       const s = filters.search.toLowerCase().trim();
       list = list.filter(
-        (d) =>
+        (d: any) =>
           (d.irn || '').toLowerCase().includes(s) ||
           d.srNo?.toString() === s ||
           d.biltyNo?.toLowerCase().includes(s) ||
@@ -941,7 +988,7 @@ export const db = {
 
   updateDispatch: async (id: string, updates: any) => {
     const store = loadStore();
-    const index = store.dispatches.findIndex((d: any) => d.id === id);
+    const index = store.dispatches.findIndex((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (index !== -1) {
       const current = store.dispatches[index];
       const rent = updates.rentAmountPkr !== undefined ? Number(updates.rentAmountPkr) : current.rentAmountPkr;
@@ -966,7 +1013,7 @@ export const db = {
 
   updatePayment: async (id: string, advancePaidPkr: number, paymentMethod?: string, paymentDate?: string) => {
     const store = loadStore();
-    const item = store.dispatches.find((d: any) => d.id === id);
+    const item = store.dispatches.find((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (item) {
       item.advancePaidPkr = advancePaidPkr;
       item.remainingRentPkr = Math.max(0, item.rentAmountPkr - advancePaidPkr);
@@ -982,7 +1029,7 @@ export const db = {
 
   toggleRentStatus: async (id: string) => {
     const store = loadStore();
-    const item = store.dispatches.find((d: any) => d.id === id);
+    const item = store.dispatches.find((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (item) {
       const nextStatus = item.rentStatus === 'PAID' ? 'PENDING' : 'PAID';
       item.rentStatus = nextStatus;
@@ -998,7 +1045,7 @@ export const db = {
 
   deleteDispatch: async (id: string) => {
     const store = loadStore();
-    const index = store.dispatches.findIndex((d: any) => d.id === id);
+    const index = store.dispatches.findIndex((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (index !== -1) {
       const deleted = store.dispatches.splice(index, 1)[0];
       const qty = Number(deleted.quantityBags) || 0;

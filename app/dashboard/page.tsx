@@ -92,7 +92,7 @@ export default function DashboardPage() {
   // Fetch Dashboard Summary & Stock Types
   const fetchSummary = useCallback(async () => {
     try {
-      const res = await fetch('/api/dashboard/summary');
+      const res = await fetch(`/api/dashboard/summary?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data: DashboardSummary = await res.json();
         setSummary(data);
@@ -121,8 +121,9 @@ export default function DashboardPage() {
       if (irnFilter.trim()) {
         params.append('irn', irnFilter.trim());
       }
+      params.append('_t', Date.now().toString());
 
-      const res = await fetch(`/api/dispatches?${params.toString()}`);
+      const res = await fetch(`/api/dispatches?${params.toString()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setDispatches(data.dispatches || []);
@@ -137,7 +138,7 @@ export default function DashboardPage() {
   // Fetch Brokers
   const fetchBrokers = useCallback(async () => {
     try {
-      const res = await fetch('/api/brokers');
+      const res = await fetch(`/api/brokers?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setBrokers(data.brokers || []);
@@ -150,7 +151,7 @@ export default function DashboardPage() {
   // Fetch Stock Items
   const fetchStockItems = useCallback(async () => {
     try {
-      const res = await fetch('/api/stock-items');
+      const res = await fetch(`/api/stock-items?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setStockItems(data.stockItems || []);
@@ -160,14 +161,29 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Initial Data Load
+  // Initial Data Load & Serverless Hydration
   useEffect(() => {
     if (!authLoading) {
-      fetchSummary();
-      fetchBrokers();
-      fetchStockItems();
+      const hydrateAndFetch = async () => {
+        try {
+          const cachedStore = localStorage.getItem('madina_master_snapshot');
+          if (cachedStore) {
+            const parsed = JSON.parse(cachedStore);
+            if (parsed && (parsed.dispatches || parsed.brokers)) {
+              await fetch('/api/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ store: parsed }),
+              }).catch(() => {});
+            }
+          }
+        } catch (e) {}
+
+        await Promise.all([fetchSummary(), fetchBrokers(), fetchStockItems(), fetchDispatches()]);
+      };
+      hydrateAndFetch();
     }
-  }, [authLoading, fetchSummary, fetchBrokers, fetchStockItems]);
+  }, [authLoading, fetchSummary, fetchBrokers, fetchStockItems, fetchDispatches]);
 
   // Refetch dispatches on filter change
   useEffect(() => {
@@ -176,9 +192,18 @@ export default function DashboardPage() {
     }
   }, [authLoading, fetchDispatches]);
 
-  // Refresh All Data
+  // Refresh All Data and update local snapshot
   const handleRefreshAll = async () => {
     await Promise.all([fetchSummary(), fetchDispatches(), fetchBrokers(), fetchStockItems()]);
+    try {
+      const syncRes = await fetch(`/api/sync?_t=${Date.now()}`, { cache: 'no-store' });
+      if (syncRes.ok) {
+        const syncData = await syncRes.json();
+        if (syncData.store) {
+          localStorage.setItem('madina_master_snapshot', JSON.stringify(syncData.store));
+        }
+      }
+    } catch (e) {}
   };
 
   // Toggle Rent Status

@@ -177,10 +177,10 @@ export default function DispatchTable({
         </div>
       </div>
 
-      {/* Excel Type Data Table */}
-      <div className="overflow-x-auto min-h-[400px]">
+      {/* Excel Type Data Table with Independent Horizontal & Vertical Scroll */}
+      <div className="overflow-x-auto overflow-y-auto max-h-[620px] min-h-[380px] border-b border-slate-200">
         <table className="w-full text-left border-collapse excel-table">
-          <thead>
+          <thead className="sticky top-0 z-20 shadow-sm bg-slate-100">
             <tr className="bg-slate-100 text-slate-700 border-b border-slate-300 text-xs font-bold uppercase tracking-wider select-none">
               <th className="py-3.5 px-3 min-w-[140px] text-center border-r border-slate-200">IRN</th>
               <th className="py-3.5 px-3.5 min-w-[160px] border-r border-slate-200">Broker & Stock Source</th>
@@ -191,7 +191,7 @@ export default function DispatchTable({
               <th className="py-3.5 px-4 min-w-[200px] border-r border-slate-200">Destination Details</th>
               <th className="py-3.5 px-4 min-w-[130px] text-right border-r border-slate-200">Total Rent / Paid</th>
               <th className="py-3.5 px-4 min-w-[150px] border-r border-slate-200">Remaining Rent (بقایا)</th>
-              <th className="py-3.5 px-3 min-w-[130px] text-center sticky right-0 bg-slate-100 shadow-sm">
+              <th className="py-3.5 px-3 min-w-[130px] text-center sticky right-0 bg-slate-100 z-30 shadow-sm">
                 Actions
               </th>
             </tr>

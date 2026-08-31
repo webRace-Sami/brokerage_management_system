@@ -150,11 +150,16 @@ export default function BrokerManagementModal({
     }
   };
 
-  const handleDelete = async (id: string, brokerName: string) => {
-    if (!confirm(`Are you sure you want to remove broker "${brokerName}"?`)) return;
+  // Delete confirmation state
+  const [brokerToDelete, setBrokerToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const confirmDeleteBroker = async () => {
+    if (!brokerToDelete) return;
+
+    setDeleteLoading(true);
     try {
-      const res = await fetch(`/api/brokers/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/brokers/${brokerToDelete.id}`, { method: 'DELETE' });
       const text = await res.text();
       let data: any = {};
       try {
@@ -162,9 +167,12 @@ export default function BrokerManagementModal({
       } catch (e) {}
 
       if (!res.ok) throw new Error(data.error || 'Failed to delete broker.');
+      setBrokerToDelete(null);
       onSuccess();
     } catch (e: any) {
       alert(e.message || 'Error removing broker.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -566,8 +574,9 @@ export default function BrokerManagementModal({
                             <Edit2 className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => handleDelete(b.id, b.name)}
-                            className="p-1.5 text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 rounded-lg"
+                            onClick={() => setBrokerToDelete({ id: b.id, name: b.name })}
+                            className="p-1.5 text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 rounded-lg transition-all"
+                            title="Delete Broker"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -580,6 +589,55 @@ export default function BrokerManagementModal({
             </table>
           </div>
         </div>
+
+        {/* Styled Delete Confirmation Popup */}
+        {brokerToDelete && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="bg-white rounded-2xl shadow-2xl border border-red-200 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-150">
+              <div className="bg-red-600 text-white p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <AlertCircle className="w-5 h-5" />
+                  <h4 className="font-bold text-sm sm:text-base font-['Outfit']">Delete Broker Profile</h4>
+                </div>
+                <button onClick={() => setBrokerToDelete(null)} className="text-white/80 hover:text-white p-1 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-3">
+                <p className="text-xs sm:text-sm text-slate-700 font-medium">
+                  Are you sure you want to permanently remove broker:
+                </p>
+                <div className="bg-red-50 p-3 rounded-xl border border-red-200 text-xs space-y-1">
+                  <div><strong>Broker Name:</strong> {brokerToDelete.name}</div>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  This broker will be removed from future dispatches and quota management.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setBrokerToDelete(null)}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteBroker}
+                  disabled={deleteLoading}
+                  className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{deleteLoading ? 'Deleting...' : 'Confirm Delete'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">

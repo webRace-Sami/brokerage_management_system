@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
+  ShieldAlert,
 } from 'lucide-react';
 import { UserProfile } from '@/lib/types';
 
@@ -146,17 +147,21 @@ export default function UserManagementModal({
     }
   };
 
-  const handleDeleteUser = async (user: UserProfile) => {
-    if (user.username === 'admin' || user.id === 'user_admin') {
+  // Delete confirmation state
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+    if (userToDelete.username === 'admin' || userToDelete.id === 'user_admin') {
       alert('Primary Admin account cannot be deleted.');
-      return;
-    }
-    if (!confirm(`Are you sure you want to permanently delete user "${user.name}" (${user.username})?`)) {
+      setUserToDelete(null);
       return;
     }
 
+    setDeleteLoading(true);
     try {
-      const res = await fetch(`/api/users/${user.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/users/${userToDelete.id}`, { method: 'DELETE' });
       const text = await res.text();
       let data: any = {};
       try {
@@ -165,9 +170,12 @@ export default function UserManagementModal({
 
       if (!res.ok) throw new Error(data.error || 'Failed to delete user.');
       await fetchUsers();
+      setUserToDelete(null);
       if (onSuccess) onSuccess();
     } catch (err: any) {
       alert(err.message || 'Error deleting user.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -468,7 +476,7 @@ export default function UserManagementModal({
 
                         {!isAdminUser && (
                           <button
-                            onClick={() => handleDeleteUser(user)}
+                            onClick={() => setUserToDelete(user)}
                             title="Delete user account"
                             className="p-1.5 text-slate-700 hover:text-red-700 bg-slate-100 hover:bg-red-50 rounded-lg border border-slate-200 transition-all"
                           >
@@ -483,6 +491,57 @@ export default function UserManagementModal({
             </div>
           </div>
         </div>
+
+        {/* Styled Delete Confirmation Popup */}
+        {userToDelete && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="bg-white rounded-2xl shadow-2xl border border-red-200 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-150">
+              <div className="bg-red-600 text-white p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <ShieldAlert className="w-5 h-5" />
+                  <h4 className="font-bold text-sm sm:text-base font-['Outfit']">Delete User Account</h4>
+                </div>
+                <button onClick={() => setUserToDelete(null)} className="text-white/80 hover:text-white p-1 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-3">
+                <p className="text-xs sm:text-sm text-slate-700 font-medium">
+                  Are you sure you want to permanently delete user account:
+                </p>
+                <div className="bg-red-50 p-3 rounded-xl border border-red-200 text-xs space-y-1">
+                  <div><strong>Name:</strong> {userToDelete.name}</div>
+                  <div><strong>Username:</strong> <span className="font-mono">{userToDelete.username}</span></div>
+                  <div><strong>Role:</strong> {userToDelete.role}</div>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  This user will no longer be able to log in or record dispatches.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setUserToDelete(null)}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteUser}
+                  disabled={deleteLoading}
+                  className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{deleteLoading ? 'Deleting...' : 'Confirm Delete'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">

@@ -126,11 +126,16 @@ export default function StockTypesManagementModal({
     }
   };
 
-  const handleDelete = async (id: string, typeName: string) => {
-    if (!confirm(`Are you sure you want to remove stock type "${typeName}"?`)) return;
+  // Delete confirmation state
+  const [stockTypeToDelete, setStockTypeToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const confirmDeleteStockType = async () => {
+    if (!stockTypeToDelete) return;
+
+    setDeleteLoading(true);
     try {
-      const res = await fetch(`/api/stock-types/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/stock-types/${stockTypeToDelete.id}`, { method: 'DELETE' });
       const text = await res.text();
       let data: any = {};
       try {
@@ -138,9 +143,12 @@ export default function StockTypesManagementModal({
       } catch (e) {}
 
       if (!res.ok) throw new Error(data.error || 'Failed to delete stock type.');
+      setStockTypeToDelete(null);
       onSuccess();
     } catch (e: any) {
       alert(e.message || 'Error deleting stock type.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -366,8 +374,9 @@ export default function StockTypesManagementModal({
                           <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(st.id, st.name)}
-                          className="p-1.5 text-slate-600 hover:text-red-700 bg-slate-100 hover:bg-red-50 rounded-lg"
+                          onClick={() => setStockTypeToDelete({ id: st.id, name: st.name })}
+                          className="p-1.5 text-slate-600 hover:text-red-700 bg-slate-100 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete Stock Type"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -379,6 +388,55 @@ export default function StockTypesManagementModal({
             </table>
           </div>
         </div>
+
+        {/* Styled Delete Confirmation Popup */}
+        {stockTypeToDelete && (
+          <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs animate-in fade-in duration-150">
+            <div className="bg-white rounded-2xl shadow-2xl border border-red-200 w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-150">
+              <div className="bg-red-600 text-white p-4 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <AlertCircle className="w-5 h-5" />
+                  <h4 className="font-bold text-sm sm:text-base font-['Outfit']">Delete Stock Type</h4>
+                </div>
+                <button onClick={() => setStockTypeToDelete(null)} className="text-white/80 hover:text-white p-1 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-3">
+                <p className="text-xs sm:text-sm text-slate-700 font-medium">
+                  Are you sure you want to remove commodity stock type:
+                </p>
+                <div className="bg-red-50 p-3 rounded-xl border border-red-200 text-xs space-y-1">
+                  <div><strong>Commodity Name:</strong> {stockTypeToDelete.name}</div>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  This commodity will no longer appear in future dispatch creation drop-downs.
+                </p>
+              </div>
+
+              <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setStockTypeToDelete(null)}
+                  disabled={deleteLoading}
+                  className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteStockType}
+                  disabled={deleteLoading}
+                  className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white px-4 py-2 text-xs font-bold rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span>{deleteLoading ? 'Deleting...' : 'Confirm Delete'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">

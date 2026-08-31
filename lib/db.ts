@@ -451,17 +451,57 @@ const initialDispatches = [
   },
 ];
 
-const DATA_FILE = path.join(process.cwd(), '.data_store.json');
+declare global {
+  var _inMemoryStore: any;
+}
+
+function getDataFilePath() {
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    const tmpPath = path.join('/tmp', '.data_store.json');
+    if (!fs.existsSync(tmpPath)) {
+      try {
+        const localPath = path.join(process.cwd(), '.data_store.json');
+        if (fs.existsSync(localPath)) {
+          const content = fs.readFileSync(localPath, 'utf-8');
+          fs.writeFileSync(tmpPath, content, 'utf-8');
+        }
+      } catch (e) {}
+    }
+    return tmpPath;
+  }
+  return path.join(process.cwd(), '.data_store.json');
+}
 
 function loadStore() {
+  if (global._inMemoryStore && global._inMemoryStore.brokers && global._inMemoryStore.dispatches) {
+    return global._inMemoryStore;
+  }
+
+  const filePath = getDataFilePath();
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const content = fs.readFileSync(DATA_FILE, 'utf-8');
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf-8');
       const parsed = JSON.parse(content);
       if (parsed.brokers && parsed.dispatches) {
         if (!parsed.companySettings) parsed.companySettings = initialCompanySettings;
         if (!parsed.stockTypes) parsed.stockTypes = initialStockTypes;
         if (!parsed.users || parsed.users.length === 0) parsed.users = initialUsers;
+        global._inMemoryStore = parsed;
+        return parsed;
+      }
+    }
+  } catch (e) {}
+
+  try {
+    const bundledPath = path.join(process.cwd(), '.data_store.json');
+    if (fs.existsSync(bundledPath)) {
+      const content = fs.readFileSync(bundledPath, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (parsed.brokers && parsed.dispatches) {
+        if (!parsed.companySettings) parsed.companySettings = initialCompanySettings;
+        if (!parsed.stockTypes) parsed.stockTypes = initialStockTypes;
+        if (!parsed.users || parsed.users.length === 0) parsed.users = initialUsers;
+        global._inMemoryStore = parsed;
         return parsed;
       }
     }
@@ -475,28 +515,22 @@ function loadStore() {
     stockItems: initialStockItems,
     dispatches: initialDispatches,
   };
+  global._inMemoryStore = defaultStore;
   saveStore(defaultStore);
   return defaultStore;
 }
 
 function saveStore(data: any) {
+  global._inMemoryStore = data;
+  const filePath = getDataFilePath();
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  } catch (e) {}
-
-  // Asynchronously sync to MongoDB Atlas if connected
-  getMongoDb().then(async (mdb) => {
-    if (!mdb) return;
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
     try {
-      await mdb.collection('system_store').updateOne(
-        { _id: 'main_store' as any },
-        { $set: { data, updatedAt: new Date() } },
-        { upsert: true }
-      );
-    } catch (err) {
-      console.error('MongoDB Atlas sync error:', err);
-    }
-  }).catch(() => {});
+      const tmpPath = path.join('/tmp', '.data_store.json');
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), 'utf-8');
+    } catch (e2) {}
+  }
 }
 
 export const db = {
@@ -858,20 +892,44 @@ export const db = {
 
     store.dispatches.push(newDispatch);
 
-    // LIVE SIMULTANEOUS STOCK DEDUCTION
-    if (newDispatch.stockSource === 'OWN_STOCK') {
-      const broker = store.brokers.find((b: any) => b.id === newDispatch.brokerId);
-      if (broker) {
-        broker.ownAvailableBags = Math.max(0, (broker.ownAvailableBags || 0) - newDispatch.quantityBags);
-        broker.ownAvailableWeight = (broker.ownAvailableBags * 50) / 40;
+    // LIVE SIMULTANEOUS STOCK DEDUCTION (Main-Broker & Co-Brokers)
+    const qty = Number(newDispatch.quantityBags) || 0;
+    const wtKg = Number(newDispatch.weightKg) || qty * 50;
+
+    // 1. Deduct from the related broker (Main-Broker or Co-Broker)
+    const relatedBroker = store.brokers.find((b: any) => b.id === newDispatch.brokerId);
+    if (relatedBroker) {
+      relatedBroker.ownAvailableBags = Math.max(0, (relatedBroker.ownAvailableBags || 0) - qty);
+      relatedBroker.ownAvailableWeight = Number(((relatedBroker.ownAvailableBags * 50) / 40.0).toFixed(2));
+
+      // If Co-Broker is selling Main-Broker stock, also deduct from the attached Main-Broker
+      if (relatedBroker.type === 'CO_BROKER' && (newDispatch.stockSource === 'MAIN_BROKER_STOCK' || !newDispatch.stockSource)) {
+        const mainBroker = store.brokers.find((b: any) => b.id === relatedBroker.attachedToMainBrokerId) || store.brokers.find((b: any) => b.type === 'MAIN_BROKER');
+        if (mainBroker) {
+          mainBroker.ownAvailableBags = Math.max(0, (mainBroker.ownAvailableBags || 0) - qty);
+          mainBroker.ownAvailableWeight = Number(((mainBroker.ownAvailableBags * 50) / 40.0).toFixed(2));
+        }
       }
     } else {
-      if (newDispatch.stockItemId) {
-        const stockItem = store.stockItems.find((s: any) => s.id === newDispatch.stockItemId);
-        if (stockItem) {
-          stockItem.availableBags = Math.max(0, stockItem.availableBags - newDispatch.quantityBags);
-          stockItem.availableWeightKg = Math.max(0, stockItem.availableWeightKg - newDispatch.weightKg);
-        }
+      const mainBroker = store.brokers.find((b: any) => b.type === 'MAIN_BROKER');
+      if (mainBroker) {
+        mainBroker.ownAvailableBags = Math.max(0, (mainBroker.ownAvailableBags || 0) - qty);
+        mainBroker.ownAvailableWeight = Number(((mainBroker.ownAvailableBags * 50) / 40.0).toFixed(2));
+      }
+    }
+
+    // 2. Deduct matching stock item
+    if (newDispatch.stockItemId) {
+      const stockItem = store.stockItems.find((s: any) => s.id === newDispatch.stockItemId);
+      if (stockItem) {
+        stockItem.availableBags = Math.max(0, (stockItem.availableBags || 0) - qty);
+        stockItem.availableWeightKg = Math.max(0, (stockItem.availableWeightKg || 0) - wtKg);
+      }
+    } else if (newDispatch.stockType) {
+      const stockItem = store.stockItems.find((s: any) => (s.name || '').toLowerCase().includes((newDispatch.stockType || '').toLowerCase().split(' ')[0]));
+      if (stockItem) {
+        stockItem.availableBags = Math.max(0, (stockItem.availableBags || 0) - qty);
+        stockItem.availableWeightKg = Math.max(0, (stockItem.availableWeightKg || 0) - wtKg);
       }
     }
 
@@ -941,19 +999,45 @@ export const db = {
     const index = store.dispatches.findIndex((d: any) => d.id === id);
     if (index !== -1) {
       const deleted = store.dispatches.splice(index, 1)[0];
-      if (deleted.stockSource === 'OWN_STOCK') {
-        const broker = store.brokers.find((b: any) => b.id === deleted.brokerId);
-        if (broker) {
-          broker.ownAvailableBags = (broker.ownAvailableBags || 0) + deleted.quantityBags;
-          broker.ownAvailableWeight = (broker.ownAvailableBags * 50) / 40;
+      const qty = Number(deleted.quantityBags) || 0;
+      const wtKg = Number(deleted.weightKg) || qty * 50;
+
+      // 1. Restore to related broker
+      const relatedBroker = store.brokers.find((b: any) => b.id === deleted.brokerId);
+      if (relatedBroker) {
+        relatedBroker.ownAvailableBags = (relatedBroker.ownAvailableBags || 0) + qty;
+        relatedBroker.ownAvailableWeight = Number(((relatedBroker.ownAvailableBags * 50) / 40.0).toFixed(2));
+
+        if (relatedBroker.type === 'CO_BROKER' && (deleted.stockSource === 'MAIN_BROKER_STOCK' || !deleted.stockSource)) {
+          const mainBroker = store.brokers.find((b: any) => b.id === relatedBroker.attachedToMainBrokerId) || store.brokers.find((b: any) => b.type === 'MAIN_BROKER');
+          if (mainBroker) {
+            mainBroker.ownAvailableBags = (mainBroker.ownAvailableBags || 0) + qty;
+            mainBroker.ownAvailableWeight = Number(((mainBroker.ownAvailableBags * 50) / 40.0).toFixed(2));
+          }
         }
-      } else if (deleted.stockItemId) {
-        const stock = store.stockItems.find((s: any) => s.id === deleted.stockItemId);
-        if (stock) {
-          stock.availableBags += deleted.quantityBags;
-          stock.availableWeightKg += deleted.weightKg;
+      } else {
+        const mainBroker = store.brokers.find((b: any) => b.type === 'MAIN_BROKER');
+        if (mainBroker) {
+          mainBroker.ownAvailableBags = (mainBroker.ownAvailableBags || 0) + qty;
+          mainBroker.ownAvailableWeight = Number(((mainBroker.ownAvailableBags * 50) / 40.0).toFixed(2));
         }
       }
+
+      // 2. Restore Stock Item
+      if (deleted.stockItemId) {
+        const stock = store.stockItems.find((s: any) => s.id === deleted.stockItemId);
+        if (stock) {
+          stock.availableBags = (stock.availableBags || 0) + qty;
+          stock.availableWeightKg = (stock.availableWeightKg || 0) + wtKg;
+        }
+      } else if (deleted.stockType) {
+        const stock = store.stockItems.find((s: any) => (s.name || '').toLowerCase().includes((deleted.stockType || '').toLowerCase().split(' ')[0]));
+        if (stock) {
+          stock.availableBags = (stock.availableBags || 0) + qty;
+          stock.availableWeightKg = (stock.availableWeightKg || 0) + wtKg;
+        }
+      }
+
       saveStore(store);
       return deleted;
     }

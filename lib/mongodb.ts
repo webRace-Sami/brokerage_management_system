@@ -1,7 +1,14 @@
 import { MongoClient, Db } from 'mongodb';
 
-const uri = process.env.MONGODB_URI || process.env.DATABASE_URL || '';
-const options = {};
+const uri =
+  process.env.DATABASE_URL ||
+  process.env.MONGODB_URI ||
+  'mongodb+srv://samiullahnawaz942_db_user:SIAoT6epgg4zQ4Ne@cluster0.nbg7m9s.mongodb.net/madina_goods_db?retryWrites=true&w=majority&appName=Cluster0';
+
+const options = {
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 5000,
+};
 
 let client: MongoClient | null = null;
 let clientPromise: Promise<MongoClient> | null = null;
@@ -18,8 +25,11 @@ if (uri && uri.startsWith('mongodb')) {
     }
     clientPromise = global._mongoClientPromise;
   } else {
-    client = new MongoClient(uri, options);
-    clientPromise = client.connect();
+    if (!global._mongoClientPromise) {
+      client = new MongoClient(uri, options);
+      global._mongoClientPromise = client.connect();
+    }
+    clientPromise = global._mongoClientPromise;
   }
 }
 

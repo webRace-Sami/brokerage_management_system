@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    const store = db.getFullStore();
+    const store = await db.getFullStore();
     return NextResponse.json({ success: true, store });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Sync fetch error' }, { status: 500 });
@@ -16,10 +16,10 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     if (body && body.store) {
-      const merged = db.syncFullStore(body.store);
+      const merged = await db.syncFullStore(body.store);
       return NextResponse.json({ success: true, store: merged });
     }
-    const current = db.getFullStore();
+    const current = await db.getFullStore();
     return NextResponse.json({ success: true, store: current });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Sync update error' }, { status: 400 });

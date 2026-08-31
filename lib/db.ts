@@ -517,17 +517,51 @@ function loadStore() {
   return defaultStore;
 }
 
+async function loadStoreAsync() {
+  try {
+    const mongoDb = await getMongoDb();
+    if (mongoDb) {
+      const doc = await mongoDb.collection('system_store').findOne({ _id: 'master_store' as any });
+      if (doc && (doc.brokers || doc.dispatches || doc.users)) {
+        const { _id, ...clean } = doc;
+        global._inMemoryStore = clean;
+        saveStore(clean);
+        return clean;
+      }
+    }
+  } catch (err) {
+    console.error('Mongo loadStore error, falling back to disk:', err);
+  }
+  return loadStore();
+}
+
+async function saveStoreAsync(data: any) {
+  saveStore(data);
+  try {
+    const mongoDb = await getMongoDb();
+    if (mongoDb) {
+      await mongoDb.collection('system_store').updateOne(
+        { _id: 'master_store' as any },
+        { $set: { _id: 'master_store', ...data, updatedAt: new Date() } },
+        { upsert: true }
+      );
+    }
+  } catch (err) {
+    console.error('Mongo saveStore error:', err);
+  }
+}
+
 export const db = {
   // FULL STORE & SYNC
-  getFullStore: () => {
-    return loadStore();
+  getFullStore: async () => {
+    return await loadStoreAsync();
   },
 
-  syncFullStore: (incomingStore: any) => {
+  syncFullStore: async (incomingStore: any) => {
     if (!incomingStore || typeof incomingStore !== 'object') {
-      return loadStore();
+      return await loadStoreAsync();
     }
-    const current = loadStore();
+    const current = await loadStoreAsync();
     const merged = {
       companySettings: incomingStore.companySettings || current.companySettings || initialCompanySettings,
       stockTypes: Array.isArray(incomingStore.stockTypes) && incomingStore.stockTypes.length > 0 ? incomingStore.stockTypes : (current.stockTypes || initialStockTypes),
@@ -536,34 +570,34 @@ export const db = {
       stockItems: Array.isArray(incomingStore.stockItems) && incomingStore.stockItems.length > 0 ? incomingStore.stockItems : (current.stockItems || initialStockItems),
       dispatches: Array.isArray(incomingStore.dispatches) ? incomingStore.dispatches : (current.dispatches || initialDispatches),
     };
-    saveStore(merged);
+    await saveStoreAsync(merged);
     return merged;
   },
 
   // COMPANY SETTINGS
   getCompanySettings: async () => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     return store.companySettings || initialCompanySettings;
   },
 
   updateCompanySettings: async (updates: any) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     store.companySettings = {
       ...store.companySettings,
       ...updates,
     };
-    saveStore(store);
+    await saveStoreAsync(store);
     return store.companySettings;
   },
 
   // STOCK TYPES
   getStockTypes: async () => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     return store.stockTypes || initialStockTypes;
   },
 
   addStockType: async (typeData: any) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const newType = {
       id: `st_${Date.now()}`,
       name: typeData.name.trim(),
@@ -577,30 +611,30 @@ export const db = {
     };
     if (!store.stockTypes) store.stockTypes = [];
     store.stockTypes.push(newType);
-    saveStore(store);
+    await saveStoreAsync(store);
     return newType;
   },
 
   updateStockType: async (id: string, updates: any) => {
-    const store = loadStore();
-    const index = store.stockTypes.findIndex((st: any) => st.id === id);
+    const store = await loadStoreAsync();
+    const index = store.stockTypes.findIndex((st: any) => st.id === id || st.code === id || st.name === id);
     if (index !== -1) {
       store.stockTypes[index] = {
         ...store.stockTypes[index],
         ...updates,
       };
-      saveStore(store);
+      await saveStoreAsync(store);
       return store.stockTypes[index];
     }
     return null;
   },
 
   deleteStockType: async (id: string) => {
-    const store = loadStore();
-    const index = store.stockTypes.findIndex((st: any) => st.id === id);
+    const store = await loadStoreAsync();
+    const index = store.stockTypes.findIndex((st: any) => st.id === id || st.code === id || st.name === id);
     if (index !== -1) {
       const deleted = store.stockTypes.splice(index, 1)[0];
-      saveStore(store);
+      await saveStoreAsync(store);
       return deleted;
     }
     return null;
@@ -608,7 +642,7 @@ export const db = {
 
   // USER MANAGEMENT
   getUsers: async () => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     return store.users || initialUsers;
   },
 
@@ -621,7 +655,7 @@ export const db = {
     role?: 'ADMIN' | 'EMPLOYEE';
     phone?: string;
   }) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const cleanUsername = userData.username.trim().toLowerCase();
     
     // Check for existing username or email
@@ -645,13 +679,13 @@ export const db = {
     };
 
     store.users.push(newUser);
-    saveStore(store);
+    await saveStoreAsync(store);
     return newUser;
   },
 
   updateUser: async (id: string, updates: any) => {
-    const store = loadStore();
-    const index = store.users.findIndex((u: any) => u.id === id);
+    const store = await loadStoreAsync();
+    const index = store.users.findIndex((u: any) => u.id === id || u.username === id);
     if (index !== -1) {
       const current = store.users[index];
       
@@ -671,29 +705,29 @@ export const db = {
         ...current,
         ...updates,
       };
-      saveStore(store);
+      await saveStoreAsync(store);
       return store.users[index];
     }
     return null;
   },
 
   deleteUser: async (id: string) => {
-    const store = loadStore();
-    const index = store.users.findIndex((u: any) => u.id === id);
+    const store = await loadStoreAsync();
+    const index = store.users.findIndex((u: any) => u.id === id || u.username === id);
     if (index !== -1) {
       const user = store.users[index];
       if (user.id === 'user_admin' || user.username === 'admin') {
         throw new Error('Primary Administrator account cannot be deleted.');
       }
       const deleted = store.users.splice(index, 1)[0];
-      saveStore(store);
+      await saveStoreAsync(store);
       return deleted;
     }
     return null;
   },
 
   findUser: async (query: { usernameOrEmail?: string; id?: string }) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     if (query.id) {
       return store.users.find((u: any) => u.id === query.id || u.username?.toLowerCase() === query.id?.toLowerCase()) || null;
     }
@@ -706,7 +740,7 @@ export const db = {
 
   // BROKERS
   getBrokers: async () => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     return store.brokers;
   },
 
@@ -725,7 +759,7 @@ export const db = {
     allocatedQuotaWeight?: number;
     commissionRate?: number;
   }) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const bags = Number(brokerData.ownAvailableBags) || 0;
     const isMain = brokerData.type === 'MAIN_BROKER';
 
@@ -747,12 +781,12 @@ export const db = {
       createdAt: new Date().toISOString(),
     };
     store.brokers.push(newBroker);
-    saveStore(store);
+    await saveStoreAsync(store);
     return newBroker;
   },
 
   updateBroker: async (id: string, updates: any) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const index = store.brokers.findIndex((b: any) => b.id === id || b.name?.toLowerCase() === id?.toLowerCase());
     if (index !== -1) {
       const current = store.brokers[index];
@@ -767,18 +801,18 @@ export const db = {
         allocatedQuotaBags: quotaBags,
         allocatedQuotaWeight: (quotaBags * 50) / 40,
       };
-      saveStore(store);
+      await saveStoreAsync(store);
       return store.brokers[index];
     }
     return null;
   },
 
   deleteBroker: async (id: string) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const index = store.brokers.findIndex((b: any) => b.id === id || b.name?.toLowerCase() === id?.toLowerCase());
     if (index !== -1) {
       const deleted = store.brokers.splice(index, 1)[0];
-      saveStore(store);
+      await saveStoreAsync(store);
       return deleted;
     }
     return null;
@@ -786,12 +820,12 @@ export const db = {
 
   // STOCK ITEMS
   getStockItems: async () => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     return store.stockItems;
   },
 
   addStockItem: async (itemData: any) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const newItem = {
       id: `stock_${Date.now()}`,
       totalBagsInward: 0,
@@ -801,12 +835,12 @@ export const db = {
       ...itemData,
     };
     store.stockItems.push(newItem);
-    saveStore(store);
+    await saveStoreAsync(store);
     return newItem;
   },
 
   addStockInward: async (inwardData: any) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const stock = store.stockItems.find((s: any) => s.id === inwardData.stockItemId || s.name?.toLowerCase() === inwardData.stockItemId?.toLowerCase());
     if (stock) {
       const bags = Number(inwardData.quantityBags) || 0;
@@ -816,7 +850,7 @@ export const db = {
       stock.availableBags = (stock.availableBags || 0) + bags;
       stock.availableWeightKg = (stock.availableWeightKg || 0) + wtKg;
     }
-    saveStore(store);
+    await saveStoreAsync(store);
     return inwardData;
   },
 
@@ -827,7 +861,7 @@ export const db = {
     supplierName?: string;
     notes?: string;
   }) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const stock = store.stockItems.find((s: any) => s.id === inwardData.stockItemId || s.name?.toLowerCase() === inwardData.stockItemId?.toLowerCase());
     if (!stock) throw new Error('Stock item not found');
 
@@ -839,13 +873,13 @@ export const db = {
     stock.availableBags += bags;
     stock.availableWeightKg += wtKg;
 
-    saveStore(store);
+    await saveStoreAsync(store);
     return stock;
   },
 
   // DISPATCHES & IRN (Format: YYYYMMDD01, YYYYMMDD02, YYYYMMDD03...)
   getDispatches: async (filters?: { brokerId?: string; rentStatus?: string; search?: string; irn?: string }) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     let list = [...store.dispatches].reverse();
 
     if (filters?.brokerId && filters.brokerId !== 'ALL') {
@@ -882,7 +916,7 @@ export const db = {
   },
 
   createDispatch: async (dispatchData: any) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const dispatchDate = dispatchData.dispatchDate || new Date().toISOString().split('T')[0];
     const cleanDate = dispatchDate.replace(/-/g, '');
     
@@ -977,12 +1011,12 @@ export const db = {
       }
     }
 
-    saveStore(store);
+    await saveStoreAsync(store);
     return newDispatch;
   },
 
   updateDispatch: async (id: string, updates: any) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const index = store.dispatches.findIndex((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (index !== -1) {
       const current = store.dispatches[index];
@@ -1000,14 +1034,14 @@ export const db = {
         balancePkr: remainingRentPkr,
         rentStatus: status,
       };
-      saveStore(store);
+      await saveStoreAsync(store);
       return store.dispatches[index];
     }
     return null;
   },
 
   updatePayment: async (id: string, advancePaidPkr: number, paymentMethod?: string, paymentDate?: string) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const item = store.dispatches.find((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (item) {
       item.advancePaidPkr = advancePaidPkr;
@@ -1016,14 +1050,14 @@ export const db = {
       item.rentStatus = item.remainingRentPkr === 0 ? 'PAID' : 'PENDING';
       if (paymentMethod) item.paymentMethod = paymentMethod;
       if (paymentDate) item.paymentDate = paymentDate;
-      saveStore(store);
+      await saveStoreAsync(store);
       return item;
     }
     return null;
   },
 
   toggleRentStatus: async (id: string) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const item = store.dispatches.find((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (item) {
       const nextStatus = item.rentStatus === 'PAID' ? 'PENDING' : 'PAID';
@@ -1032,14 +1066,14 @@ export const db = {
       item.remainingRentPkr = nextStatus === 'PAID' ? 0 : item.rentAmountPkr;
       item.balancePkr = item.remainingRentPkr;
       item.paymentDate = new Date().toISOString().split('T')[0];
-      saveStore(store);
+      await saveStoreAsync(store);
       return item;
     }
     return null;
   },
 
   deleteDispatch: async (id: string) => {
-    const store = loadStore();
+    const store = await loadStoreAsync();
     const index = store.dispatches.findIndex((d: any) => d.id === id || String(d.srNo) === String(id) || d.irn === id || d.biltyNo === id);
     if (index !== -1) {
       const deleted = store.dispatches.splice(index, 1)[0];
@@ -1082,7 +1116,7 @@ export const db = {
         }
       }
 
-      saveStore(store);
+      await saveStoreAsync(store);
       return deleted;
     }
     return null;

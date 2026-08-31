@@ -50,6 +50,10 @@ export default function UserManagementModal({
   const [phone, setPhone] = useState('');
   const [formSubmitting, setFormSubmitting] = useState(false);
 
+  // Delete confirmation state
+  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -146,10 +150,6 @@ export default function UserManagementModal({
       setFormSubmitting(false);
     }
   };
-
-  // Delete confirmation state
-  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const confirmDeleteUser = async () => {
     if (!userToDelete) return;

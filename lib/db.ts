@@ -855,8 +855,9 @@ export const db = {
     const dispatchDate = dispatchData.dispatchDate || new Date().toISOString().split('T')[0];
     const cleanDate = dispatchDate.replace(/-/g, '');
     
-    // Strict sequential IRN based on overall SR Number (never repeats 01, 02, 03, 04, 05...)
-    const srNo = store.dispatches.length + 1;
+    // Strict incremental sequential IRN based on highest existing SR Number
+    const maxSrNo = store.dispatches.reduce((max: number, d: any) => Math.max(max, Number(d.srNo) || 0), 0);
+    const srNo = maxSrNo + 1;
     const seq = String(srNo).padStart(2, '0');
     const irn = `${cleanDate}${seq}`;
     
@@ -872,13 +873,26 @@ export const db = {
     const quantityUnit = dispatchData.quantityUnit || 'Bags';
     const weightSlipNo = dispatchData.weightSlipNo ? dispatchData.weightSlipNo.trim() : `xdk-${Math.floor(1000 + Math.random() * 9000)} / ${Math.floor(100000 + Math.random() * 900000)}`;
 
+    let bName = dispatchData.brokerName;
+    let bType = dispatchData.brokerType;
+    if (dispatchData.brokerId) {
+      const b = store.brokers.find((x: any) => x.id === dispatchData.brokerId);
+      if (b) {
+        bName = b.name;
+        bType = b.type;
+      }
+    }
+
     const newDispatch = {
+      ...dispatchData,
       id: `disp_${Date.now()}`,
       irn,
       srNo,
       biltyNo,
       weightSlipNo,
       quantityUnit,
+      brokerName: bName || dispatchData.brokerName || 'Main Broker',
+      brokerType: bType || dispatchData.brokerType || 'MAIN_BROKER',
       rentAmountPkr: parsedRent,
       advancePaidPkr: parsedAdvance,
       remainingRentPkr,
@@ -887,7 +901,6 @@ export const db = {
       dispatchDate,
       paymentDate,
       createdAt: new Date().toISOString(),
-      ...dispatchData,
     };
 
     store.dispatches.push(newDispatch);

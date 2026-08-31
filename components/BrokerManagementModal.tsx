@@ -40,6 +40,10 @@ export default function BrokerManagementModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Delete confirmation state
+  const [brokerToDelete, setBrokerToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   if (!isOpen) return null;
 
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
@@ -149,10 +153,6 @@ export default function BrokerManagementModal({
       setLoading(false);
     }
   };
-
-  // Delete confirmation state
-  const [brokerToDelete, setBrokerToDelete] = useState<{ id: string; name: string } | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const confirmDeleteBroker = async () => {
     if (!brokerToDelete) return;

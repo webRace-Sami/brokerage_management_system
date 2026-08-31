@@ -193,85 +193,42 @@ export default function DashboardPage() {
     }
   };
 
-  // Export to Excel CSV
-  const handleExportExcel = () => {
+  // Export to Genuine Excel (.xlsx)
+  const handleExportExcel = async () => {
     if (dispatches.length === 0) {
       alert('No dispatch records to export.');
       return;
     }
 
-    const headers = [
-      'IRN',
-      'Bilty No',
-      'Weight Slip No',
-      'Dispatch Date',
-      'Broker Name',
-      'Broker Type',
-      'Stock Source',
-      'Commodity / Type',
-      'Goods Description',
-      'Quantity',
-      'Unit',
-      'Weight (kg)',
-      'Weight (Maunds)',
-      'Truck No',
-      'Driver Name',
-      'Driver CNIC',
-      'Shop Name',
-      'Shopkeeper',
-      'Destination City',
-      'Total Rent (PKR)',
-      'Advance Paid (PKR)',
-      'Remaining Rent (PKR)',
-      'Rent Status',
-      'Payment Method',
-      'Payment Date',
-      'Dispatched By',
-    ];
+    try {
+      const params = new URLSearchParams();
+      if (activeBrokerTab && activeBrokerTab !== 'ALL') {
+        params.append('brokerId', activeBrokerTab);
+      }
+      if (selectedRentFilter && selectedRentFilter !== 'ALL') {
+        params.append('rentStatus', selectedRentFilter);
+      }
+      if (searchQuery.trim()) {
+        params.append('search', searchQuery.trim());
+      }
 
-    const rows = dispatches.map((d) => [
-      d.irn || `${(d.dispatchDate || '').replace(/-/g, '')}${String(d.srNo).padStart(2, '0')}`,
-      d.biltyNo,
-      d.weightSlipNo || '',
-      d.dispatchDate,
-      d.brokerName,
-      d.brokerType,
-      d.stockSource,
-      d.stockType || '',
-      `"${(d.materialDescription || '').replace(/"/g, '""')}"`,
-      d.quantityBags,
-      d.quantityUnit || 'Bags',
-      d.weightKg,
-      d.weightMaunds,
-      d.truckNo,
-      `"${(d.driverName || '').replace(/"/g, '""')}"`,
-      `'${d.driverCnic}`,
-      `"${(d.shopName || '').replace(/"/g, '""')}"`,
-      `"${(d.shopkeeperName || '').replace(/"/g, '""')}"`,
-      d.destinationCity,
-      d.rentAmountPkr,
-      d.advancePaidPkr,
-      d.remainingRentPkr !== undefined ? d.remainingRentPkr : Math.max(0, d.rentAmountPkr - d.advancePaidPkr),
-      d.rentStatus,
-      `"${(d.paymentMethod || '').replace(/"/g, '""')}"`,
-      d.paymentDate || '',
-      `"${(d.dispatchedBy || '').replace(/"/g, '""')}"`,
-    ]);
-
-    const csvContent =
-      'data:text/csv;charset=utf-8,\uFEFF' +
-      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute(
-      'download',
-      `Madina_Goods_Transport_Dispatches_${new Date().toISOString().split('T')[0]}.csv`
-    );
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+      const res = await fetch(`/api/export-excel?${params.toString()}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `Madina_Goods_Transport_Dispatches_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        window.open('/api/export-excel', '_blank');
+      }
+    } catch (err) {
+      window.open('/api/export-excel', '_blank');
+    }
   };
 
   if (authLoading) {

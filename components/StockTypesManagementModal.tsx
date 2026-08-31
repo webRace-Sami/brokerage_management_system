@@ -34,6 +34,10 @@ export default function StockTypesManagementModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Delete confirmation state
+  const [stockTypeToDelete, setStockTypeToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
   if (!isOpen) return null;
 
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
@@ -125,10 +129,6 @@ export default function StockTypesManagementModal({
       setLoading(false);
     }
   };
-
-  // Delete confirmation state
-  const [stockTypeToDelete, setStockTypeToDelete] = useState<{ id: string; name: string } | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const confirmDeleteStockType = async () => {
     if (!stockTypeToDelete) return;

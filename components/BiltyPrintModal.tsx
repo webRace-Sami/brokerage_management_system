@@ -250,7 +250,7 @@ export default function BiltyPrintModal({
         {/* Modal Footer */}
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between no-print">
           <span className="text-xs text-slate-500">
-            Standard Thermal / A4 Print Format Supported
+            Standard Single-Page A4 / Thermal Format (صفحہ بلٹی رسید)
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -264,11 +264,46 @@ export default function BiltyPrintModal({
               className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-xs font-bold shadow-md transition-all"
             >
               <Printer className="w-4 h-4" />
-              <span>Print Bilty Receipt</span>
+              <span>Print Bilty (Single Page)</span>
             </button>
           </div>
         </div>
       </div>
+
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 6mm;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+          }
+          body * {
+            visibility: hidden;
+          }
+          #printable-bilty, #printable-bilty * {
+            visibility: visible;
+          }
+          #printable-bilty {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            page-break-inside: avoid !important;
+            page-break-after: avoid !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

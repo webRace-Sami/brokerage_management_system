@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Layers, Plus, Edit2, Trash2, ShieldCheck, AlertCircle, Check, Package } from 'lucide-react';
 import { StockTypeData, UserProfile } from '@/lib/types';
 
@@ -19,6 +19,7 @@ export default function StockTypesManagementModal({
   stockTypes,
   currentUser,
 }: StockTypesManagementModalProps) {
+  const [localStockTypes, setLocalStockTypes] = useState<StockTypeData[]>(stockTypes || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -37,6 +38,30 @@ export default function StockTypesManagementModal({
   // Delete confirmation state
   const [stockTypeToDelete, setStockTypeToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const fetchLocalStockTypes = async () => {
+    try {
+      const res = await fetch('/api/stock-types');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.stockTypes) setLocalStockTypes(data.stockTypes);
+      }
+    } catch (e) {
+      console.error('Failed to reload stock types', e);
+    }
+  };
+
+  useEffect(() => {
+    if (stockTypes && stockTypes.length > 0) {
+      setLocalStockTypes(stockTypes);
+    }
+  }, [stockTypes]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchLocalStockTypes();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -122,6 +147,7 @@ export default function StockTypesManagementModal({
       if (!res.ok) throw new Error(data.error || `Failed to save stock type (Status ${res.status}).`);
 
       resetForm();
+      await fetchLocalStockTypes();
       onSuccess();
     } catch (err: any) {
       setError(err.message || 'Error occurred while saving.');
@@ -144,6 +170,7 @@ export default function StockTypesManagementModal({
 
       if (!res.ok) throw new Error(data.error || 'Failed to delete stock type.');
       setStockTypeToDelete(null);
+      await fetchLocalStockTypes();
       onSuccess();
     } catch (e: any) {
       alert(e.message || 'Error deleting stock type.');
@@ -349,7 +376,7 @@ export default function StockTypesManagementModal({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {stockTypes.map((st) => (
+                {localStockTypes.map((st) => (
                   <tr key={st.id} className="hover:bg-slate-50">
                     <td className="py-3 px-3.5">
                       <div className="font-bold text-slate-900">{st.name}</div>

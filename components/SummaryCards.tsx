@@ -177,23 +177,14 @@ export default function SummaryCards({
                   ))}
                 </div>
 
-                {/* Available Bags & Weight */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className={`p-2 rounded-xl border ${isSelected ? 'bg-emerald-900/60 border-emerald-800' : 'bg-white border-emerald-100'}`}>
+                {/* Available Bags */}
+                <div className="text-xs">
+                  <div className={`p-2.5 rounded-xl border ${isSelected ? 'bg-emerald-900/60 border-emerald-800' : 'bg-white border-emerald-100'}`}>
                     <span className={`block text-[10px] font-bold ${isSelected ? 'text-emerald-300' : 'text-slate-500'}`}>
                       Available Stock
                     </span>
-                    <span className={`font-black font-mono text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>
-                      {mb.availableBags.toLocaleString()} <span className="text-[10px] font-normal">Bags</span>
-                    </span>
-                  </div>
-
-                  <div className={`p-2 rounded-xl border ${isSelected ? 'bg-emerald-900/60 border-emerald-800' : 'bg-white border-emerald-100'}`}>
-                    <span className={`block text-[10px] font-bold ${isSelected ? 'text-emerald-300' : 'text-slate-500'}`}>
-                      Total Weight
-                    </span>
-                    <span className={`font-black font-mono text-sm ${isSelected ? 'text-white' : 'text-slate-900'}`}>
-                      {Math.round(mb.totalWeightMaunds).toLocaleString()} <span className="text-[10px] font-normal">Maunds</span>
+                    <span className={`font-black font-mono text-base ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                      {mb.availableBags.toLocaleString()} <span className="text-xs font-normal">Bags / Nugs</span>
                     </span>
                   </div>
                 </div>

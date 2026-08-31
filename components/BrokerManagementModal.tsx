@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Users, Plus, ShieldCheck, Check, Edit2, Trash2, Building, AlertCircle, Link2, Unlink, Coins, Layers } from 'lucide-react';
 import { BrokerData, StockTypeData, UserProfile } from '@/lib/types';
 
@@ -21,6 +21,7 @@ export default function BrokerManagementModal({
   stockTypes,
   currentUser,
 }: BrokerManagementModalProps) {
+  const [localBrokers, setLocalBrokers] = useState<BrokerData[]>(brokers || []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingBrokerId, setEditingBrokerId] = useState<string | null>(null);
 
@@ -44,10 +45,34 @@ export default function BrokerManagementModal({
   const [brokerToDelete, setBrokerToDelete] = useState<{ id: string; name: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const fetchLocalBrokers = async () => {
+    try {
+      const res = await fetch('/api/brokers');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.brokers) setLocalBrokers(data.brokers);
+      }
+    } catch (e) {
+      console.error('Failed to reload local brokers', e);
+    }
+  };
+
+  useEffect(() => {
+    if (brokers && brokers.length > 0) {
+      setLocalBrokers(brokers);
+    }
+  }, [brokers]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchLocalBrokers();
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.username === 'admin';
-  const mainBrokers = brokers.filter((b) => b.type === 'MAIN_BROKER');
+  const mainBrokers = localBrokers.filter((b) => b.type === 'MAIN_BROKER');
 
   const resetForm = () => {
     setName('');
@@ -146,6 +171,7 @@ export default function BrokerManagementModal({
       if (!res.ok) throw new Error(data.error || `Failed to save broker (Status ${res.status}).`);
 
       resetForm();
+      await fetchLocalBrokers();
       onSuccess();
     } catch (err: any) {
       setError(err.message || 'Error saving broker.');
@@ -168,6 +194,7 @@ export default function BrokerManagementModal({
 
       if (!res.ok) throw new Error(data.error || 'Failed to delete broker.');
       setBrokerToDelete(null);
+      await fetchLocalBrokers();
       onSuccess();
     } catch (e: any) {
       alert(e.message || 'Error removing broker.');
@@ -491,7 +518,7 @@ export default function BrokerManagementModal({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {brokers.map((b) => {
+                {localBrokers.map((b) => {
                   const isMain = b.type === 'MAIN_BROKER';
                   return (
                     <tr key={b.id} className="hover:bg-slate-50">

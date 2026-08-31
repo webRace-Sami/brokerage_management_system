@@ -47,7 +47,7 @@ export default function BrokerManagementModal({
 
   const fetchLocalBrokers = async () => {
     try {
-      const res = await fetch('/api/brokers');
+      const res = await fetch(`/api/brokers?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.brokers) setLocalBrokers(data.brokers);

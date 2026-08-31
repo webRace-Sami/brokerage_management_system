@@ -473,41 +473,36 @@ function saveStore(data: any) {
 }
 
 function loadStore() {
-  if (global._inMemoryStore && global._inMemoryStore.brokers && global._inMemoryStore.dispatches) {
-    return global._inMemoryStore;
-  }
-
-  // 1. Check /tmp first for latest serverless state
-  try {
-    const tmpPath = path.join('/tmp', '.data_store.json');
-    if (fs.existsSync(tmpPath)) {
-      const content = fs.readFileSync(tmpPath, 'utf-8');
-      const parsed = JSON.parse(content);
-      if (parsed.brokers && parsed.dispatches) {
-        if (!parsed.companySettings) parsed.companySettings = initialCompanySettings;
-        if (!parsed.stockTypes) parsed.stockTypes = initialStockTypes;
-        if (!parsed.users) parsed.users = initialUsers;
-        global._inMemoryStore = parsed;
-        return parsed;
-      }
-    }
-  } catch (e) {}
-
-  // 2. Check local project root .data_store.json
+  // 1. Always check local project root .data_store.json first (Authoritative on local/server)
   try {
     const localPath = path.join(process.cwd(), '.data_store.json');
     if (fs.existsSync(localPath)) {
       const content = fs.readFileSync(localPath, 'utf-8');
       const parsed = JSON.parse(content);
-      if (parsed.brokers && parsed.dispatches) {
-        if (!parsed.companySettings) parsed.companySettings = initialCompanySettings;
-        if (!parsed.stockTypes) parsed.stockTypes = initialStockTypes;
-        if (!parsed.users) parsed.users = initialUsers;
+      if (parsed && typeof parsed === 'object') {
         global._inMemoryStore = parsed;
         return parsed;
       }
     }
   } catch (e) {}
+
+  // 2. Check /tmp for serverless container state
+  try {
+    const tmpPath = path.join('/tmp', '.data_store.json');
+    if (fs.existsSync(tmpPath)) {
+      const content = fs.readFileSync(tmpPath, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (parsed && typeof parsed === 'object') {
+        global._inMemoryStore = parsed;
+        return parsed;
+      }
+    }
+  } catch (e) {}
+
+  // 3. Check memory store fallback
+  if (global._inMemoryStore && typeof global._inMemoryStore === 'object') {
+    return global._inMemoryStore;
+  }
 
   const defaultStore = {
     companySettings: initialCompanySettings,

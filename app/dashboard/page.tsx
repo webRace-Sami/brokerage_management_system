@@ -161,27 +161,13 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Initial Data Load & Serverless Hydration
+  // Initial Data Load
   useEffect(() => {
     if (!authLoading) {
-      const hydrateAndFetch = async () => {
-        try {
-          const cachedStore = localStorage.getItem('madina_master_snapshot');
-          if (cachedStore) {
-            const parsed = JSON.parse(cachedStore);
-            if (parsed && (parsed.dispatches || parsed.brokers)) {
-              await fetch('/api/sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ store: parsed }),
-              }).catch(() => {});
-            }
-          }
-        } catch (e) {}
-
-        await Promise.all([fetchSummary(), fetchBrokers(), fetchStockItems(), fetchDispatches()]);
-      };
-      hydrateAndFetch();
+      fetchSummary();
+      fetchBrokers();
+      fetchStockItems();
+      fetchDispatches();
     }
   }, [authLoading, fetchSummary, fetchBrokers, fetchStockItems, fetchDispatches]);
 
@@ -192,18 +178,9 @@ export default function DashboardPage() {
     }
   }, [authLoading, fetchDispatches]);
 
-  // Refresh All Data and update local snapshot
+  // Refresh All Data
   const handleRefreshAll = async () => {
     await Promise.all([fetchSummary(), fetchDispatches(), fetchBrokers(), fetchStockItems()]);
-    try {
-      const syncRes = await fetch(`/api/sync?_t=${Date.now()}`, { cache: 'no-store' });
-      if (syncRes.ok) {
-        const syncData = await syncRes.json();
-        if (syncData.store) {
-          localStorage.setItem('madina_master_snapshot', JSON.stringify(syncData.store));
-        }
-      }
-    } catch (e) {}
   };
 
   // Toggle Rent Status

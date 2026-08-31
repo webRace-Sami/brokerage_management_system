@@ -41,7 +41,7 @@ export default function StockTypesManagementModal({
 
   const fetchLocalStockTypes = async () => {
     try {
-      const res = await fetch('/api/stock-types');
+      const res = await fetch(`/api/stock-types?_t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.stockTypes) setLocalStockTypes(data.stockTypes);

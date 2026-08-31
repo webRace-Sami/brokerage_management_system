@@ -57,7 +57,7 @@ export default function UserManagementModal({
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch(`/api/users?_t=${Date.now()}`, { cache: 'no-store' });
       const data = await res.json();
       if (res.ok) {
         setUsers(data.users || []);
